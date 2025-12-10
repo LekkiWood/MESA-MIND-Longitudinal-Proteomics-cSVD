@@ -1,0 +1,363 @@
+---
+title: "MESA-MIND-Longitudinal-Proteomics-cSVD"
+author: "LekkiWood (LekkiWood@Gmail.com)"
+date: today
+format:
+  pdf:
+    toc: true
+    toc-depth: 3
+crossref:
+  tbl-prefix: "Table"
+  fig-prefix: "Figure"
+execute:
+  echo: false
+  warning: false
+  message: false
+  # ensure chunks run from the project root (where _targets/ lives)
+  dir: project
+pdf-engine: latexmk
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+
+
+## Load targets
+if (!requireNamespace("targets", quietly = TRUE)) {
+  stop("The {targets} package is not installed/available in this render session.")
+}
+
+## Load knitr
+if (!requireNamespace("knitr", quietly = TRUE)) {
+  stop("The {knitr} package is not installed/available in this render session.")
+}
+
+## Load quarto
+if (!requireNamespace("quarto", quietly = TRUE)) {
+  stop("The {quarto} package is not installed/available in this render session.")
+}
+
+## Load gtsummary
+if (!requireNamespace("gtsummary", quietly = TRUE)) {
+  stop("The {gtsummary} package is not installed/available in this render session.")
+}
+
+
+```
+
+\newpage
+
+# Summary
+
+# Step 1: Cleaning and Formatting Proteins
+
+```{r}
+
+#| label: load-filename-info
+
+#General QC info
+QC_info <- targets::tar_read(build_proteins_QC)
+
+#Final N
+finalclean_N_by_exam <- targets::tar_read(Proteins_clean_N)
+```
+
+## Input file names
+
+### Raw metabolite tables
+
+-   A table of protein abundances: `{r} print(unlist(strsplit(QC_info$filenames$raw_proteins_file_name, split="/"))[8])`
+-   Sample information to link TOPMed IDs to unique MESA SHARe ID and exam combinations: `{r} print(unlist(strsplit(QC_info$filenames$raw_protein_info_file_name, split="/"))[8])`
+-   Keys to link Olink IDs to names compounds: `{r} print(unlist(strsplit(QC_info$filenames$ raw_protein_keys_file_name, split="/"))[8])`
+-   A file to bridge SHARe ids (sidno) with MESA IDs (idno) `{r} print(unlist(strsplit(QC_info$filenames$raw_bridgingfile_file_name, split="/"))[7])`
+
+## Raw file info
+
+-   The raw protein abundance file contained information on N=`{r} print(QC_info$raw_inputs$raw_protein_N_all)` protein assays, including those used for QC.
+
+-   When removing assays for QC, the raw protein abundance file contained information on N=`{r} print(QC_info$raw_inputs$raw_protein_N_proteins[1,1])` proteins.
+
+-   The protein abundance file contained information on N=`{r} print(QC_info$raw_inputs$raw_N_all)` sample IDs (i.e., unique participant/exam combinations), including bridging samples.
+
+-   After removing QC samples (including bridging, controls, and one duplicate) the protein abundance file contained information on N=`{r} print(QC_info$raw_inputs$raw_N_nobridge)` sample IDs (i.e., unique participant/exam combinations).
+
+### Formatting
+
+-   Bridging (and other QC) samples were removed.
+
+-   Protein assays used for QC were removed.
+
+-   Proteins that should be excluded due to QC warnings (variable "QC_warning" set to "EXCLUDED") were removed, even though these do not have NPX values.
+
+-   Data were put into wide format, with "SampleID" as the unique ID, "OlinkID" forming the variable names (protein identifiers), and values taken from the "NPX" column.
+
+    -   In wide format, the file contained information on N=`{r} print(QC_info$formatted_protein_file_info$unique_sampleids)` unique sample IDs.
+
+    -   In wide format, the file contained information on N=`{r} print(QC_info$formatted_protein_file_info$duplicated_sampleids)` duplicated sample IDs. ^1^
+
+-   SHARe IDs, and subsequently MESA IDs, were merged into the file with exam information.
+
+-   At this point, the range of unique SHARe ID by exam combinations was N=`{r} range(QC_info$initial_dupes$Freq)[1]` - `{r} range(QC_info$initial_dupes$Freq)[2]`. This indicates no sample ID were duplicated in the assays.
+
+-   The formatted protein file was used to calculate the coefficient of variation (CV) using the formula: CV = sqrt(2`^`(sigma`^`2)-1).
+
+-   A variable called "Retain" was created to indicate whether each protein was (1) unique (i.e., included on only one panel); (2) duplicated, and across all panels had the lowest CV; or (3) duplicated, and across all panels did not have the lowest CV.
+
+-   A final table of protein abundances, with additional variables for SHARe ID, MESA ID, Exam, TOPMed ID and Batch, was created after the steps above, with proteins duplicated across more than one panel cleaned such that only the one with the lowest CV is retained. This file was used in the analysis
+
+-   This file included data on the following numbers of participants, stratified by exam:
+
+```{r}
+
+knitr::kable(finalclean_N_by_exam, format="latex") #print(knitr::kable(finalclean_N_by_exam))
+```
+
+\newpage
+
+# Step 2: Format Phenotypes
+
+```{r}
+
+#| label: read-in-trait-info
+
+Traits_QC_info <- targets::tar_read(traits_QC_info)
+
+Traits_db <- targets::tar_read(traits_db)
+```
+
+## Input files
+
+-   Covariates from E1: `{r} print(unlist(strsplit(Traits_QC_info$filenames$E1_covs_filename, split="/"))[7])`
+
+-   Covariates from E5: `{r} print(unlist(strsplit(Traits_QC_info$filenames$E5_covs_filename, split="/"))[7])`
+
+-   Covariates from E6: `{r} print(unlist(strsplit(Traits_QC_info$filenames$E6_covs_filename, split="/"))[7])`
+
+-   Afib info: `{r} print(unlist(strsplit(Traits_QC_info$filenames$afib_filename, split="/"))[7])`
+
+-   ApoE info: `{r} print(unlist(strsplit(Traits_QC_info$filenames$apoe_filename, split="/"))[7])`
+
+-   Incident CVD: `{r} print(unlist(strsplit(Traits_QC_info$filenames$cvd_filename, split="/"))[7])`
+
+-   Microbleeds: `{r} print(unlist(strsplit(Traits_QC_info$filenames$mb_filename, split="/"))[7])`
+
+-   Perivascular spaces: `{r} print(unlist(strsplit(Traits_QC_info$filenames$evps_filename, split="/"))[7])`
+
+-   White matter hyperintensities: `{r} print(unlist(strsplit(Traits_QC_info$filenames$wmh_filename, split="/"))[7])`
+
+-   Intracranial volumes: `{r} print(unlist(strsplit(Traits_QC_info$filenames$icv_filename, split="/"))[7])`
+
+-   Fractional anisotropy: `{r} print(unlist(strsplit(Traits_QC_info$filenames$wmfa_filename, split="/"))[7])`
+
+-   White matter hyperintensities: `{r} print(unlist(strsplit(Traits_QC_info$filenames$wmh_filename, split="/"))[7])`
+
+## Formatting
+
+### Outcomes:
+
+-   Microbleeds were coded as 0/1, where 0= no microbleeds (value: 0) and 1 = presence of microbleeds (all non-zero values except missing). This yielded the following frequencies:
+
+```{r}
+    #| label: raw-MB-N
+
+knitr::kable(table(Traits_db$mb_present_all), format="latex")
+```
+
+Then, those images with a low image quality (value = 4; N=`{r} length(Traits_db$qsm_swi_image_quality[Traits_db$qsm_swi_image_quality == 4 & !is.na(Traits_db$qsm_swi_image_quality)])` ) were recoded to missing, yielding the following frequencies:
+
+```{r}
+#| label: raw-MB-N-quality
+
+knitr::kable(table(Traits_db$mb_present), format="latex")
+```
+
+-   Perivascular spaces (variable: epvs_wholebrain_vol) were recoded to missing where the variable 'pvs_exclude' was coded as 1 (N=`{r} length(Traits_db[Traits_db$pvs_exclude ==1 & !is.na(Traits_db$pvs_exclude),]$pvs_exclude)`).
+
+-   White matter hyperintensities (variable: wm_wmh) were divided by 1000 to convert to ml (following Rizwan's code), and those where the variable wmh_exclude had a code of 1 (N=`{r} length(Traits_db[Traits_db$wmh_exclude ==1 & !is.na(Traits_db$wmh_exclude),]$wmh_exclude)` ) were set to missing.
+
+-   Fractional anisotropy (variable: wmfa) was coded to missing where the variable fa_exclude had a value of 1 (N=`{r} length(Traits_db[Traits_db$fa_exclude ==1 & !is.na(Traits_db$fa_exclude),]$fa_exclude)`).
+
+## Covariates
+
+#### True time invariant covariates
+
+-   Race/ethnicity, gender, and highest education level were all taken from exam 1 data. ApoE information was taken from its own dataset (above).
+
+    -   ApoE was coded 0/1/2 where 0= no e4 isoform (codes 22, 23, 33), 1 = e4 isoform (24, 34, 44), and 2 = no isoform data. The ApoE variable was formatted as a factor.
+
+    -   Gender was coded such that female = 0 and male = 1.
+
+    -   Education was recoded 0/1, such that 0 = less than high school (codes: 0: NO SCHOOLING / 1: GRADES 1-8 / 2: GRADES: 9-11) and 1= high school or more (all other codes, excluding missing).
+
+    -   Race/ethnicity was recoded retaining the original MESA coded whereby 1=White American; 2= Chinese American, 3=Black, African-American, and 4 = Hispanic. Race/ethnicity was coded as a factor variable.
+
+#### Pseudo-time invariant covariates
+
+-   Although some variables are technically time invariant, where they were included due to their effects on MRI data, since MRI data are only measured at one exam for this analysis (exam 6), these covariates were always taken from exam 6.
+
+-   These 'pseudo time invariant covariates' were: atrial fibrillation, myocardial infarction, congestive heart failure, LDL, systolic blood pressure, hypertension medication, and site (since site seems to affect MRI more than proteins??).
+
+    -   Afib, MI, and CHF were coded 0/1, such that 0= no diagnosis and 1= afib diagnosis. Missing data was left as missing (this is different to Rizwan who coded missing data as no diagnosis).
+
+    -   Site was arbitrarily coded as 0=Wake forest, 1= Columbia, 2=Johns Hopkins, 3=University of Minnesota, 4=Northwestern, 5=UCLA
+
+    #### Time varying covariates
+
+-   The following covariates were taken from the exam when the proteins were used, as these were seen to affect proteins more in the short term than they affect MRI (?): kidney function (egfr), BMI , cigarette smoking (never/former/current; coded as ordinal), diabetes status.
+
+    -   Smoking was harmonized and coded such that 0 = never smoker, 1= past smoker, 2=current smoker.
+
+    -   Diabetes has harmonized and coded such that 0= no diabetes (including impaired fasting glucose), and 1 = diabetes (treated and untreated).
+
+-   The following covariates were taken from exam 6: age (age6c), kidney function (egfr; cepgfr6c), BMI (bmi6c), systolic blood pressure (sbp6c), LDL (ldl6), site(site6c), the use of hypertension medication (htnmed6c; coded 0= no, and 1= yes), cigarette smoking (cig6c), diabetes status (dm036t)
+
+# Step 3: Sample descriptives
+
+```{r}
+
+#| label: info-for-descrptives
+
+protein_ids <- targets::tar_read(protein_ids)
+protein_and_MIND_ids <- targets::tar_read(protein_and_MIND_ids)
+protein_and_MIND_and_cov_ids <- targets::tar_read(protein_and_MIND_and_cov_ids)
+```
+
+-   There were N=`{r} print(length(unique(protein_ids$idno)))` MESA participants with protein information, equating to N=`{r} print(length(unique(protein_ids[which(protein_ids$Exam==1),]$idno)))` at exam 1, N=`{r} length(unique(protein_ids[which(protein_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_ids[which(protein_ids$Exam==6),]$idno))` at exam 6.
+
+-   Of those with protein data, N=`{r} print(length(unique(protein_and_MIND_ids$idno)))` participants had at least one MRI outcome included in this analysis (after QC above), equating to N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==6),]$idno))` at exam 6.
+
+-   Of those with protein data and at least one MRI outcome, N=`{r} print(length(unique(protein_and_MIND_and_cov_ids$idno)))` participants had no missing covariate data and so were included in this analysis, equating to N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==6),]$idno))` at exam 6.
+
+::: {.landscape}
+```{r}
+
+#| label: table of descriptives
+
+
+table1 <- Traits_db |> 
+  dplyr::mutate(
+        gender_desc = factor(gender,
+                       levels = c("0", "1"),
+                       labels = c("Female", "Male")),
+        Exam_desc = factor(Exam,
+                       levels = c("1", "5", "6"),
+                       labels = c("Exam 1", "Exam 5", "Exam6")),
+        race_desc = factor(race,
+                       levels = c("1", "2", "3", "4"),
+                       labels = c("Non-Hispanic White", "Chinese American", "Black/African-American", "Hispanic")),
+        mb_present_desc = factor(mb_present,
+                       levels = c("0", "1"),
+                       labels = c("No", "Yes")),
+                       smoking_desc = factor(smoking,
+                       levels = c("0", "1", "2"),
+                       labels = c("Never", "Former", "Current")),
+        diabetes_desc = factor(diabetes,
+                       levels = c("0", "1"),
+                       labels = c("Normoglycemia/IFG", "Diabetes (treated or untreated)")),
+        edu_desc = factor(edu,
+                       levels = c("0", "1"),
+                       labels = c("Up to and including high school", "More than high school")),
+        E4_desc = factor(E4,
+                       levels = c("0", "1", "2"),
+                       labels = c("No E4 isoform", "E4 isoform", "No ApoE data")),
+        site_desc = factor(site,
+                       levels = c("1", "2", "3", "4", "5", "6"),
+                       labels = c("Wake Forest", "Columbia","Johns Hopkins", "Minnesota", "Northwestern", "UCLA")),
+         AFprevalent_desc = factor(AFprevalent,
+                       levels = c("0", "1"),
+                       labels = c("No", "Yes")),
+        MIprevalent_desc = factor(MIprevalent,
+                       levels = c("0", "1"),
+                       labels = c("No", "Yes")),
+         CHFprevalent_desc = factor(CHFprevalent,
+                       levels = c("0", "1"),
+                       labels = c("No", "Yes")),
+        smoking_desc = factor(smoking,
+                       levels = c("0", "1", "2"),
+                       labels = c("Never", "Former", "Current"))
+      ) |>
+gtsummary::tbl_summary(
+    include = c(age, gender_desc, site_desc, edu_desc, race_desc, BMI, smoking_desc, ldl, sbp, diabetes_desc, AFprevalent_desc, MIprevalent_desc, CHFprevalent_desc, E4_desc, egfr, fa, wmh, epvs, mb_present_desc),
+    by = Exam, # split table by group
+    missing = "no", # don't list missing data separately
+    label = list(age = "Age (y)",
+                 gender_desc = "Gender",
+                 site_desc = "Field Center", 
+                 race_desc = "Race or ethnicity",
+                 edu_desc = "Highest education level",
+                 BMI = "BMI (kg/m^2^)",
+                 ldl = "LDL levels",
+                 sbp = "systolic blood pressure",
+                 diabetes_desc = "Diabetes status",
+                 AFprevalent_desc = "Atrial fibrillation",
+                 MIprevalent_desc = "Myocardial Infarction",
+                 CHFprevalent_desc = "Coronary Heart Failure",
+                 E4_desc = "ApoeE information",
+                 smoking_desc = "Smoking status",
+                 egfr = "Kidney function (egfr)",
+                 fa ="fractional anisotropy",
+                 wmh="white matter hyperintensities",
+                 epvs="Enlarged perivascular spaces",
+                 mb_present_desc = "Presence of microbleeds?"),
+    type = list(age ~ "continuous",
+                 gender_desc ~ "categorical",
+                 site_desc ~ "categorical", 
+                 race_desc ~ "categorical",
+                 edu_desc ~ "categorical",
+                 BMI ~ "continuous",
+                 ldl ~ "continuous",
+                 sbp ~ "continuous",
+                 diabetes_desc ~ "categorical",
+                 AFprevalent_desc ~ "categorical",
+                 MIprevalent_desc ~ "categorical",
+                 CHFprevalent_desc ~ "categorical",
+                 E4_desc ~ "categorical",
+                 smoking_desc ~ "categorical",
+                 egfr ~ "continuous",
+                 fa ~ "continuous",
+                 wmh ~ "continuous",
+                 epvs ~ "continuous",
+                 mb_present_desc ~ "categorical"
+    ) 
+)|> 
+  gtsummary::add_n() |> # add column with total number of non-missing observations
+  gtsummary::add_p() |> # test for a difference between groups
+  gtsummary::modify_header(text_interpret = "html") |> # update the column header
+  gtsummary::bold_labels() 
+
+
+
+knitr::kable(table1, format="latex", longtable = TRUE, caption="Sample Descriptives") |> #print(knitr::kable(finalclean_N_by_exam)) 
+  kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header"))
+
+
+```
+
+***add icv to table***
+
+:::
+
+  
+
+# Notes
+
+##Footnotes
+
+^1^ This is a reproducible file for many runs, containing many data checks. Values of 0 or NULL are expected, and just indicate no problem with the data.
+
+## Session Info
+
+For reproducibility
+
+```{r}
+
+#| label: session-info
+
+# Prefer the detailed sessioninfo output; otherwise fall back to base.
+if (requireNamespace("sessioninfo", quietly = TRUE)) {
+  sessioninfo::session_info()
+} else {
+  sessionInfo()
+}
+```
