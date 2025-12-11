@@ -277,8 +277,13 @@ table1 <- Traits_db |>
                        levels = c("0", "1", "2"),
                        labels = c("Never", "Former", "Current"))
       ) |>
-gtsummary::tbl_summary(
-    include = c(age, gender_desc, site_desc, edu_desc, race_desc, BMI, smoking_desc, ldl, sbp, diabetes_desc, AFprevalent_desc, MIprevalent_desc, CHFprevalent_desc, E4_desc, egfr, fa, wmh, epvs, mb_present_desc),
+    gtsummary::tbl_strata(
+    .strata = Exam_desc,
+    .tbl_fun =
+      ~ .x |>
+      gtsummary::tbl_summary(
+    include = c(age, gender_desc, site_desc, edu_desc, race_desc, BMI, smoking_desc, ldl, sbp, diabetes_desc,
+                AFprevalent_desc, MIprevalent_desc, CHFprevalent_desc, E4_desc, egfr, fa, wmh, epvs, mb_present_desc),
     by = Exam, # split table by group
     missing = "no", # don't list missing data separately
     label = list(age = "Age (y)",
@@ -320,6 +325,7 @@ gtsummary::tbl_summary(
                  epvs ~ "continuous",
                  mb_present_desc ~ "categorical"
     ) 
+      )
 )|> 
   gtsummary::add_n() |> # add column with total number of non-missing observations
   gtsummary::add_p() |> # test for a difference between groups
