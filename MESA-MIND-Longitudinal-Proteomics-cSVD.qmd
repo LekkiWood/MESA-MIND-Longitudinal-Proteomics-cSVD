@@ -15,7 +15,7 @@ execute:
   message: false
   # ensure chunks run from the project root (where _targets/ lives)
   dir: project
-pdf-engine: latexmk
+pdf-engine: lualatex
 editor: visual
 ---
 
@@ -156,15 +156,7 @@ Traits_db <- targets::tar_read(traits_db)
 
 ### Outcomes:
 
--   Microbleeds were coded as 0/1, where 0= no microbleeds (value: 0) and 1 = presence of microbleeds (all non-zero values except missing). This yielded the following frequencies:
-
-```{r}
-    #| label: raw-MB-N
-
-knitr::kable(table(Traits_db$mb_present_all), format="latex")
-```
-
-Then, those images with a low image quality (value = 4; N=`{r} length(Traits_db$qsm_swi_image_quality[Traits_db$qsm_swi_image_quality == 4 & !is.na(Traits_db$qsm_swi_image_quality)])` ) were recoded to missing, yielding the following frequencies:
+-   Microbleeds were coded as 0/1, where 0= no microbleeds (value: 0) and 1 = presence of microbleeds (all non-zero values except missing). Then, those images with a low image quality (value = 4; N=`{r} length(Traits_db$qsm_swi_image_quality[Traits_db$qsm_swi_image_quality == 4 & !is.na(Traits_db$qsm_swi_image_quality)])` ) were recoded to missing.
 
 ```{r}
 #| label: raw-MB-N-quality
@@ -174,9 +166,9 @@ knitr::kable(table(Traits_db$mb_present), format="latex")
 
 -   Perivascular spaces (variable: epvs_wholebrain_vol) were recoded to missing where the variable 'pvs_exclude' was coded as 1 (N=`{r} length(Traits_db[Traits_db$pvs_exclude ==1 & !is.na(Traits_db$pvs_exclude),]$pvs_exclude)`).
 
--   White matter hyperintensities (variable: wm_wmh) were divided by 1000 to convert to ml (following Rizwan's code), and those where the variable wmh_exclude had a code of 1 (N=`{r} length(Traits_db[Traits_db$wmh_exclude ==1 & !is.na(Traits_db$wmh_exclude),]$wmh_exclude)` ) were set to missing.
+-   White matter hyperintensities (variable: wm_wmh) were divided by 1000 to convert to ml (following Rizwan's code), and those where the variable wmh_exclude had a code of 1 were set to missing.
 
--   Fractional anisotropy (variable: wmfa) was coded to missing where the variable fa_exclude had a value of 1 (N=`{r} length(Traits_db[Traits_db$fa_exclude ==1 & !is.na(Traits_db$fa_exclude),]$fa_exclude)`).
+-   Fractional anisotropy (variable: wmfa) was coded to missing where the variable fa_exclude had a value of 1.
 
 ## Covariates
 
@@ -218,21 +210,32 @@ knitr::kable(table(Traits_db$mb_present), format="latex")
 
 #| label: info-for-descrptives
 
-protein_ids <- targets::tar_read(protein_ids)
+mind_ids <- targets::tar_read(mind_ids)
 protein_and_MIND_ids <- targets::tar_read(protein_and_MIND_ids)
 protein_and_MIND_and_cov_ids <- targets::tar_read(protein_and_MIND_and_cov_ids)
 ```
 
--   There were N=`{r} print(length(unique(protein_ids$idno)))` MESA participants with protein information, equating to N=`{r} print(length(unique(protein_ids[which(protein_ids$Exam==1),]$idno)))` at exam 1, N=`{r} length(unique(protein_ids[which(protein_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_ids[which(protein_ids$Exam==6),]$idno))` at exam 6.
+-   There were N=`{r} print(length(unique(mind_ids$idno)))` MESA participants with at least one MRI outcome after the exclusions above.
 
--   Of those with protein data, N=`{r} print(length(unique(protein_and_MIND_ids$idno)))` participants had at least one MRI outcome included in this analysis (after QC above), equating to N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==6),]$idno))` at exam 6.
+-   Of those with MRI data, N=`{r} print(length(unique(protein_and_MIND_ids$idno)))` participants had protein data, equating to N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==6),]$idno))` at exam 6.
 
 -   Of those with protein data and at least one MRI outcome, N=`{r} print(length(unique(protein_and_MIND_and_cov_ids$idno)))` participants had no missing covariate data and so were included in this analysis, equating to N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==6),]$idno))` at exam 6.
 
-::: {.landscape}
+::: landscape
 ```{r}
 
 #| label: table of descriptives
+
+bold_labels <- c(
+  "Age (y)", "Gender", "Field Center", "Race or ethnicity", "Highest education level",
+  "BMI (kg/m^2^)", "LDL levels", "systolic blood pressure", "Diabetes status",
+  "Takes hypertentsion medicine", "Atrial fibrillation", "Myocardial Infarction",
+  "Coronary Heart Failure", "ApoeE information", "Smoking status",
+  "Kidney function (egfr)", "Intracranial volume", "fractional anisotropy",
+  "white matter hyperintensities", "Enlarged perivascular spaces",
+  "Presence of microbleeds?"
+)
+
 
 
 table1 <- Traits_db |> 
@@ -255,6 +258,9 @@ table1 <- Traits_db |>
         diabetes_desc = factor(diabetes,
                        levels = c("0", "1"),
                        labels = c("Normoglycemia/IFG", "Diabetes (treated or untreated)")),
+        htnmeds_desc = factor(htnmeds,
+                       levels = c("0", "1"),
+                       labels = c("No", "Yes")),
         edu_desc = factor(edu,
                        levels = c("0", "1"),
                        labels = c("Up to and including high school", "More than high school")),
@@ -278,10 +284,16 @@ table1 <- Traits_db |>
                        labels = c("Never", "Former", "Current"))
       ) |>
 gtsummary::tbl_summary(
-    include = c(age, gender_desc, site_desc, edu_desc, race_desc, BMI, smoking_desc, ldl, sbp, diabetes_desc, AFprevalent_desc, MIprevalent_desc, CHFprevalent_desc, E4_desc, egfr, fa, wmh, epvs, mb_present_desc),
-    by = Exam, # split table by group
+    include = c(age, gender_desc, site_desc, edu_desc, race_desc, BMI, smoking_desc, ldl, sbp, diabetes_desc, htnmeds_desc, AFprevalent_desc, MIprevalent_desc, CHFprevalent_desc, E4_desc, egfr, icv, fa, wmh, epvs, mb_present_desc),
+    by = Exam,
+    statistic = list(
+      gtsummary::all_continuous() ~ "{mean} ({sd})",
+      gtsummary::all_categorical() ~ "{n} / {N} ({p}%)"
+    ),# split table by group
     missing = "no", # don't list missing data separately
-    label = list(age = "Age (y)",
+    digits = gtsummary::all_continuous() ~ 2, 
+   ##add in labels
+     label = list(age = "Age (y)",
                  gender_desc = "Gender",
                  site_desc = "Field Center", 
                  race_desc = "Race or ethnicity",
@@ -290,17 +302,19 @@ gtsummary::tbl_summary(
                  ldl = "LDL levels",
                  sbp = "systolic blood pressure",
                  diabetes_desc = "Diabetes status",
+                 htnmeds_desc = "Takes hypertentsion medicine",
                  AFprevalent_desc = "Atrial fibrillation",
                  MIprevalent_desc = "Myocardial Infarction",
                  CHFprevalent_desc = "Coronary Heart Failure",
                  E4_desc = "ApoeE information",
                  smoking_desc = "Smoking status",
                  egfr = "Kidney function (egfr)",
+                 icv = "Intracranial volume",
                  fa ="fractional anisotropy",
                  wmh="white matter hyperintensities",
                  epvs="Enlarged perivascular spaces",
                  mb_present_desc = "Presence of microbleeds?"),
-    type = list(age ~ "continuous",
+   type = list(age ~ "continuous",
                  gender_desc ~ "categorical",
                  site_desc ~ "categorical", 
                  race_desc ~ "categorical",
@@ -309,36 +323,46 @@ gtsummary::tbl_summary(
                  ldl ~ "continuous",
                  sbp ~ "continuous",
                  diabetes_desc ~ "categorical",
+                 htnmeds_desc ~ "categorical",
                  AFprevalent_desc ~ "categorical",
                  MIprevalent_desc ~ "categorical",
                  CHFprevalent_desc ~ "categorical",
                  E4_desc ~ "categorical",
                  smoking_desc ~ "categorical",
                  egfr ~ "continuous",
+                 icv ~ "continuous",
                  fa ~ "continuous",
                  wmh ~ "continuous",
                  epvs ~ "continuous",
                  mb_present_desc ~ "categorical"
     ) 
-)|> 
-  gtsummary::add_n() |> # add column with total number of non-missing observations
-  gtsummary::add_p() |> # test for a difference between groups
-  gtsummary::modify_header(text_interpret = "html") |> # update the column header
-  gtsummary::bold_labels() 
+) |>
+  gtsummary::modify_spanning_header(
+    gtsummary::all_stat_cols() ~ "Exam"
+  ) |>
+  gtsummary::as_gt() |>
+  gt::tab_options(page.orientation = "landscape") |>
+  gt::tab_style(
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_body(
+      columns = "label",
+      rows = label %in% bold_labels
+    )
+    ) |>
+# Bold *any* spanning headers (includes your "Exam" spanner)
+  gt::tab_style(
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_column_spanners()
+  ) |>
+  gt::tab_options(latex.use_longtable = TRUE)
 
-
-
-knitr::kable(table1, format="latex", longtable = TRUE, caption="Sample Descriptives") |> #print(knitr::kable(finalclean_N_by_exam)) 
-  kableExtra::kable_styling(latex_options = c("hold_position", "repeat_header"))
+table1
 
 
 ```
 
-***add icv to table***
-
 :::
 
-  
 
 # Notes
 

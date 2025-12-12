@@ -1,0 +1,19 @@
+# RStudio
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# targets
+_targets/
+
+# Quarto / LaTeX
+*.fdb_latexmk
+*.aux
+*.log
+
+
+# Local archives
+Archive/
+
