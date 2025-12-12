@@ -1,5 +1,3 @@
-
-
 # RStudio
 .Rproj.user
 .Rhistory
@@ -7,15 +5,15 @@
 .Ruserdata
 *.Rproj
 
-# targets pipeline outputs
+# targets
 _targets/
 
-# LaTeX / Quarto / build junk
+# Quarto / LaTeX
 *.fdb_latexmk
 *.aux
 *.log
-*_cache/
 
-#large csv
 
-*.csv
+# Local archives
+Archive/
+

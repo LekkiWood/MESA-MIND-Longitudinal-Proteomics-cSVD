@@ -12,7 +12,7 @@ Sys.setenv(VROOM_CONNECTION_SIZE = as.character(10 * 1024 * 1024)) #For any larg
 
 tar_option_set(packages = c("dplyr", "tidyr", "tibble", "readr", "data.table", "bit64", 
                             "foreign", "quarto", "rlang", "purrr", "rcompanion", "knitr", "gtsummary", "labelled",
-                            "kableExtra"))
+                            "kableExtra", "gt", "cli", "quarto"))
 
 tar_source("/media/Analyses/MESA-MIND-Longitudinal-Proteomics-cSVD/R")
 
@@ -105,11 +105,11 @@ list(
                                                  path_wmh = path_wmh,
                                                  path_icv = path_icv,
                                                  path_wmfa = path_wmfa,
-                                                 cleaned_proteins = Proteins_long_clean)),
+                                                 cleaned_proteins = Proteins_long)),
   
   tar_target(traits_QC_info, build_traits$QC_info_out),
   tar_target(traits_db, build_traits$Traits_table),
-  tar_target(protein_ids, build_traits$protein_ids),
+  tar_target(mind_ids, build_traits$mind_ids),
   tar_target(protein_and_MIND_ids, build_traits$protein_and_MIND_ids),
   tar_target(protein_and_MIND_and_cov_ids, build_traits$protein_and_MIND_and_cov_ids),
 
