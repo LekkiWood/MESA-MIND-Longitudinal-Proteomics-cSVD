@@ -48,6 +48,14 @@ if (!requireNamespace("gtsummary", quietly = TRUE)) {
 
 \newpage
 
+# Important Notes - read me first
+
+-   Always check that you have the most recent version of this document, which - unless I am sending you unfinalized work - is available [here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/MESA-MIND-Longitudinal-Proteomics-cSVD.pdf).
+
+    -   An easy check for version control is to make sure this date: `r Sys.Date()`. is the same as on the GitHub file [here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/MESA-MIND-Longitudinal-Proteomics-cSVD.pdf).
+
+-   The code for this is analysis avaiable in the same repository ([targets master file here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/_targets.R) and [individual functions here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/tree/main/R))
+
 # Summary
 
 # Step 1: Cleaning and Formatting Proteins
@@ -64,8 +72,6 @@ finalclean_N_by_exam <- targets::tar_read(Proteins_clean_N)
 ```
 
 ## Input file names
-
-### Raw metabolite tables
 
 -   A table of protein abundances: `{r} print(unlist(strsplit(QC_info$filenames$raw_proteins_file_name, split="/"))[8])`
 -   Sample information to link TOPMed IDs to unique MESA SHARe ID and exam combinations: `{r} print(unlist(strsplit(QC_info$filenames$raw_protein_info_file_name, split="/"))[8])`
@@ -360,13 +366,11 @@ table1
 
 
 ```
-
 :::
-
 
 # Notes
 
-##Footnotes
+## Footnotes
 
 ^1^ This is a reproducible file for many runs, containing many data checks. Values of 0 or NULL are expected, and just indicate no problem with the data.
 

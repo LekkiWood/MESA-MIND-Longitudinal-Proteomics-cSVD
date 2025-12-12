@@ -62,25 +62,27 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
     dplyr::full_join(EVPS_info, dplyr::join_by(idno)) |>
     dplyr::full_join(WMH_info, dplyr::join_by(idno)) |>
     dplyr::full_join(WMFA_info, dplyr::join_by(idno)) |>
-    dplyr::mutate(Exam = 6) |>
     dplyr::left_join(bridge, dplyr::join_by(idno)) |>
     dplyr::filter(!is.na(mb_present) | !is.na(epvs) | !is.na(epvs) | !is.na(wmh) | !is.na(fa)) 
     
   
   
   mind_ids <- Traits |>
-    dplyr::select(idno, sidno, Exam)
+    dplyr::select(idno, sidno)
   
   #---------------------------N with protein data-----------------------#
 
   
-  protein_and_MIND_ids <- Traits |>
-    dplyr::left_join(cleaned_proteins, dplyr::join_by(idno, sidno, Exam)) |>
+  protein_and_MIND_ids <- cleaned_proteins |>
+    #dplyr::full_join(cleaned_proteins, dplyr::join_by(idno, sidno)) |>
+    dplyr::filter(idno %in% mind_ids$idno) |>
     dplyr::select(idno, sidno, Exam)
   
   
   Traits <- Traits |>
-    dplyr::filter(idno %in% cleaned_proteins$idno)
+    dplyr::filter(idno %in% protein_and_MIND_ids$idno)
+  
+
   
   #------------------------------Build covariates-------------------------------
   
@@ -296,7 +298,7 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
     Traits_table = full_db,
     mind_ids = mind_ids,
     protein_and_MIND_ids = protein_and_MIND_ids,
-    protein_and_MIND_and_cov_ids
+    protein_and_MIND_and_cov_ids = protein_and_MIND_and_cov_ids
     )
   
   
