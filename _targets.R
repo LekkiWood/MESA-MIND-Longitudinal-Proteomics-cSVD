@@ -112,6 +112,25 @@ list(
   tar_target(mind_ids, build_traits$mind_ids),
   tar_target(protein_and_MIND_ids, build_traits$protein_and_MIND_ids),
   tar_target(protein_and_MIND_and_cov_ids, build_traits$protein_and_MIND_and_cov_ids),
+  
+  
+  #---------------------------------------------------------------------------------------#
+  #--------------------------------2. Run PWAS -------------------------------------------#
+  #---------------------------------------------------------------------------------------#
+  
+  ##White matter hyperintensities
+  tar_target(wmh_covs, c("icv", "age", "gender", "race", "site", "edu", "egfr", "BMI", "sbp", 
+                            "htnmeds", "smoking", "ldl", "E4", "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  
+  tar_target(WMH_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                    protein_mapping = Protein_mapping_file,
+                                                    traits_db = traits_db, 
+                                                    covariates = wmh_covs, 
+                                                    outcome = "wmh",
+                                                    chosen_exam = 6)),
+
+             
+             
 
   #---------------------------------------------------------------------------------------#
   #--------------------------------Quarto output------------------------------------------#

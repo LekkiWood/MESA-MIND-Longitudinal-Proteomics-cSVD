@@ -54,7 +54,7 @@ if (!requireNamespace("gtsummary", quietly = TRUE)) {
 
     -   An easy check for version control is to make sure this date: `r Sys.Date()`. is the same as on the GitHub file [here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/MESA-MIND-Longitudinal-Proteomics-cSVD.pdf).
 
--   The code for this is analysis avaiable in the same repository ([targets master file here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/_targets.R) and [individual functions here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/tree/main/R))
+-   The code for this is analysis available in the same repository ([targets master file here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/_targets.R) and [individual functions here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/tree/main/R))
 
 # Summary
 
@@ -237,8 +237,8 @@ bold_labels <- c(
   "BMI (kg/m^2^)", "LDL levels", "systolic blood pressure", "Diabetes status",
   "Takes hypertentsion medicine", "Atrial fibrillation", "Myocardial Infarction",
   "Coronary Heart Failure", "ApoeE information", "Smoking status",
-  "Kidney function (egfr)", "Intracranial volume", "fractional anisotropy",
-  "white matter hyperintensities", "Enlarged perivascular spaces",
+  "Kidney function (egfr)", "Intracranial volume", "Fractional anisotropy",
+  "White matter hyperintensities", "Enlarged perivascular spaces",
   "Presence of microbleeds?"
 )
 
@@ -316,8 +316,8 @@ gtsummary::tbl_summary(
                  smoking_desc = "Smoking status",
                  egfr = "Kidney function (egfr)",
                  icv = "Intracranial volume",
-                 fa ="fractional anisotropy",
-                 wmh="white matter hyperintensities",
+                 fa ="Fractional anisotropy",
+                 wmh="White matter hyperintensities",
                  epvs="Enlarged perivascular spaces",
                  mb_present_desc = "Presence of microbleeds?"),
    type = list(age ~ "continuous",
