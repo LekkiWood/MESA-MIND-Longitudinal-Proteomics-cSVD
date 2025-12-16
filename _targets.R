@@ -12,7 +12,7 @@ Sys.setenv(VROOM_CONNECTION_SIZE = as.character(10 * 1024 * 1024)) #For any larg
 
 tar_option_set(packages = c("dplyr", "tidyr", "tibble", "readr", "data.table", "bit64", 
                             "foreign", "quarto", "rlang", "purrr", "rcompanion", "knitr", "gtsummary", "labelled",
-                            "kableExtra", "gt", "cli", "quarto"))
+                            "kableExtra", "gt", "cli", "quarto", "sandwich", "lmerTest"))
 
 tar_source("/media/Analyses/MESA-MIND-Longitudinal-Proteomics-cSVD/R")
 
@@ -114,23 +114,103 @@ list(
   tar_target(protein_and_MIND_and_cov_ids, build_traits$protein_and_MIND_and_cov_ids),
   
   
-  #---------------------------------------------------------------------------------------#
-  #--------------------------------2. Run PWAS -------------------------------------------#
-  #---------------------------------------------------------------------------------------#
+  #--------------------------------------------------------------------------------------------------------#
+  #--------------------------------2. Run Cross-sectional PWAS -------------------------------------------#
+  #-------------------------------------------------------------------------------------------------------#
   
-  ##White matter hyperintensities
-  tar_target(wmh_covs, c("icv", "age", "gender", "race", "site", "edu", "egfr", "BMI", "sbp", 
-                            "htnmeds", "smoking", "ldl", "E4", "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  ##-------------White matter hyperintensities-----------------#
+  tar_target(wmh_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
+  tar_target(wmh_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  
   
   tar_target(WMH_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
-                                                    protein_mapping = Protein_mapping_file,
-                                                    traits_db = traits_db, 
-                                                    covariates = wmh_covs, 
-                                                    outcome = "wmh",
-                                                    chosen_exam = 6)),
-
-             
-             
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "wmh",
+                                                        numeric_covariates = wmh_numeric_covs,
+                                                        factor_covariates = wmh_factor_covs,
+                                                        chosen_exam = 6)),
+  
+  tar_target(WMH_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "wmh",
+                                                        numeric_covariates = wmh_numeric_covs,
+                                                        factor_covariates = wmh_factor_covs,
+                                                        chosen_exam = 1)),
+  
+  
+  ##-------------Perivascular spaces. ----------------#
+  tar_target(epvs_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
+  tar_target(epvs_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  
+  
+  tar_target(EPVS_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "epvs",
+                                                        numeric_covariates = epvs_numeric_covs,
+                                                        factor_covariates = epvs_factor_covs,
+                                                        chosen_exam = 6)),
+  
+  tar_target(EPVS_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "epvs",
+                                                        numeric_covariates = epvs_numeric_covs,
+                                                        factor_covariates = epvs_factor_covs,
+                                                        chosen_exam = 1)),
+  
+  
+  
+  
+  ##-------------Fractional ansiotropy ----------------#
+  tar_target(fa_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
+  tar_target(fa_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+                                 "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  
+  
+  tar_target(FA_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                         protein_mapping = Protein_mapping_file,
+                                                         traits_db = traits_db, 
+                                                         outcome = "fa",
+                                                         numeric_covariates = fa_numeric_covs,
+                                                         factor_covariates = fa_factor_covs,
+                                                         chosen_exam = 6)),
+  
+  tar_target(FA_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                         protein_mapping = Protein_mapping_file,
+                                                         traits_db = traits_db, 
+                                                         outcome = "fa",
+                                                         numeric_covariates = fa_numeric_covs,
+                                                         factor_covariates = fa_factor_covs,
+                                                         chosen_exam = 1)),
+  
+ 
+  
+   ##-------------Microbleeds ----------------#
+  tar_target(mb_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
+  tar_target(mb_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+                               "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
+  
+  
+  tar_target(MB_E6_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                       protein_mapping = Protein_mapping_file,
+                                                       traits_db = traits_db, 
+                                                       outcome = "mb_present",
+                                                       numeric_covariates = mb_numeric_covs,
+                                                       factor_covariates = mb_factor_covs,
+                                                       chosen_exam = 6)),
+  
+  tar_target(MB_E1_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long, 
+                                                       protein_mapping = Protein_mapping_file,
+                                                       traits_db = traits_db, 
+                                                       outcome = "mb_present",
+                                                       numeric_covariates = mb_numeric_covs,
+                                                       factor_covariates = mb_factor_covs,
+                                                       chosen_exam = 1)),
 
   #---------------------------------------------------------------------------------------#
   #--------------------------------Quarto output------------------------------------------#

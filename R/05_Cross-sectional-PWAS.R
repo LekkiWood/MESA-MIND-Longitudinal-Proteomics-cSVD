@@ -1,5 +1,6 @@
 cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
-                                          traits_db, covariates, outcome, chosen_exam) {
+                                          traits_db, numeric_covariates, factor_covariates, outcome, chosen_exam) {
+  
   
   common_keys <- intersect(names(cleaned_proteins), names(traits_db))
   
@@ -10,13 +11,10 @@ cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
     dplyr::filter(OlinkID %in% names(PWAS_file)) |>
     dplyr::pull(OlinkID)
   
-  factor_covs <- c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
-                   "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")
   
-  numeric_covs <- c("icv", "age", "egfr", "BMI", "sbp", "ldl")
   
   # confirm required columns exist
-  stopifnot(all(c(outcome, factor_covs, numeric_covs, "Exam") %in% names(PWAS_file)))
+  stopifnot(all(c(outcome, factor_covariates, numeric_covariates, "Exam") %in% names(PWAS_file)))
   
   # subset once (faster + avoids repeated subset() inside loop)
   dat <- PWAS_file |> 
@@ -38,8 +36,8 @@ cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
     
     rhs_terms <- c(
       paste0("scale(", predictor, ")"),
-      paste0("scale(", numeric_covs, ")"),
-      factor_covs
+      paste0("scale(", numeric_covariates, ")"),
+      factor_covariates
     )
     
     fml <- stats::as.formula(
@@ -64,5 +62,5 @@ cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
     dplyr::left_join(protein_mapping, dplyr::join_by(OlinkID))
   
   ######Output
-results
+  results
 }
