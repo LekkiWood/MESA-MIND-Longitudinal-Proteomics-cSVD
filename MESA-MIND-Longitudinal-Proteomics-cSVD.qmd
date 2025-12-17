@@ -61,8 +61,8 @@ if (!requireNamespace("gtsummary", quietly = TRUE)) {
 # Step 1: Cleaning and Formatting Proteins
 
 ```{r}
-
 #| label: load-filename-info
+
 
 #General QC info
 QC_info <- targets::tar_read(build_proteins_QC)
@@ -112,9 +112,11 @@ finalclean_N_by_exam <- targets::tar_read(Proteins_clean_N)
 
 -   A final table of protein abundances, with additional variables for SHARe ID, MESA ID, Exam, TOPMed ID and Batch, was created after the steps above, with proteins duplicated across more than one panel cleaned such that only the one with the lowest CV is retained. This file was used in the analysis
 
--   This file included data on the following numbers of participants, stratified by exam:
+-   The number of participants, stratified by exam, in the final file is available in @tbl-final-N-by-exam:
 
 ```{r}
+#| label: tbl-final-N-by-exam
+#| tbl-cap: Final N by exam
 
 knitr::kable(finalclean_N_by_exam, format="latex") #print(knitr::kable(finalclean_N_by_exam))
 ```
@@ -124,7 +126,6 @@ knitr::kable(finalclean_N_by_exam, format="latex") #print(knitr::kable(finalclea
 # Step 2: Format Phenotypes
 
 ```{r}
-
 #| label: read-in-trait-info
 
 Traits_QC_info <- targets::tar_read(traits_QC_info)
@@ -213,7 +214,6 @@ knitr::kable(table(Traits_db$mb_present), format="latex")
 # Step 3: Sample descriptives
 
 ```{r}
-
 #| label: info-for-descrptives
 
 mind_ids <- targets::tar_read(mind_ids)
@@ -227,10 +227,12 @@ protein_and_MIND_and_cov_ids <- targets::tar_read(protein_and_MIND_and_cov_ids)
 
 -   Of those with protein data and at least one MRI outcome, N=`{r} print(length(unique(protein_and_MIND_and_cov_ids$idno)))` participants had no missing covariate data and so were included in this analysis, equating to N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_and_cov_ids[which(protein_and_MIND_and_cov_ids$Exam==6),]$idno))` at exam 6.
 
+-   See @tbl-of-descriptives
+
 ::: landscape
 ```{r}
-
-#| label: table of descriptives
+#| label: tbl-of-descriptives
+#| tbl-cap: Sample Descriptives
 
 bold_labels <- c(
   "Age (y)", "Gender", "Field Center", "Race or ethnicity", "Highest education level",
@@ -368,18 +370,75 @@ table1
 ```
 :::
 
+# Cross sectional Protein-Wide Association Studies (PWAS)
+
+```{r}
+#| label: cross-sectional PWAS
+
+#Load results
+
+WMH_E6_PWAS <- targets::tar_read(WMH_E6_PWAS)
+WMH_E1_PWAS <- targets::tar_read(WMH_E1_PWAS)
+
+EPVS_E6_PWAS <- targets::tar_read(EPVS_E6_PWAS)
+EPVS_E1_PWAS <- targets::tar_read(EPVS_E1_PWAS)
+
+MB_E6_PWAS <- targets::tar_read(MB_E6_PWAS)
+MB_E1_PWAS <- targets::tar_read(MB_E1_PWAS)
+
+FA_E6_PWAS <- targets::tar_read(FA_E6_PWAS)
+FA_E1_PWAS <- targets::tar_read(FA_E1_PWAS)
+
+PWAS_res <- WMH_E6_PWAS |>
+  dplyr::full_join(WMH_E1_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(EPVS_E1_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(EPVS_E6_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(MB_E1_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+    dplyr::full_join(MB_E6_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(FA_E1_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(FA_E6_PWAS, dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain))
+
+#Load covariates
+
+wmh_numeric_covs <- targets::tar_read(wmh_numeric_covs)
+wmh_factor_covs <- targets::tar_read(wmh_factor_covs)
+
+epvs_numeric_covs <- targets::tar_read(epvs_numeric_covs)
+epvs_factor_covs <- targets::tar_read(epvs_factor_covs)
+
+mb_numeric_covs <- targets::tar_read(mb_numeric_covs)
+mb_factor_covs <- targets::tar_read(mb_factor_covs)
+
+fa_numeric_covs <- targets::tar_read(fa_numeric_covs)
+fa_factor_covs <- targets::tar_read(fa_factor_covs)
+
+
+```
+
+This section includes PWAS where proteins were only used at one time point (exam 1 or exam 6), even if this was not the same time point as when the MRI data were used.
+
+## White matter hyperintensity (WMH)
+
+-   For WMH the numeric covariates included `{r} print(wmh_numeric_covs)`. ^2^
+-   For WMH the factor covariates included `{r} print(wmh_factor_covs)`. ^2^
+
+### Exam 6 proteins
+
+-   The E6 proteins -\> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res$WMH_E6_nobs, na.rm=TRUE))` participants.
+
 # Notes
 
 ## Footnotes
 
 ^1^ This is a reproducible file for many runs, containing many data checks. Values of 0 or NULL are expected, and just indicate no problem with the data.
 
+^2^ These are intentionally written as variable names to avoid reproducibility errors.
+
 ## Session Info
 
 For reproducibility
 
 ```{r}
-
 #| label: session-info
 
 # Prefer the detailed sessioninfo output; otherwise fall back to base.

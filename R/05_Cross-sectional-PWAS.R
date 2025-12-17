@@ -55,10 +55,10 @@ cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
   }
   
   out$fdr <- p.adjust(out$pvalue, method = "fdr")
-  names(out) <- paste(paste(outcome, "E6", sep="_"), names(out), sep="_")
+  names(out) <- paste(paste(outcome, chosen_exam, sep="_"), names(out), sep="_")
   
   results <- as.data.frame(out) |>
-    dplyr::rename(OlinkID = paste(paste(outcome, "E6", sep="_"), "protein", sep="_")) |>
+    dplyr::rename(OlinkID = paste(paste(outcome, chosen_exam, sep="_"), "protein", sep="_")) |>
     dplyr::left_join(protein_mapping, dplyr::join_by(OlinkID))
   
   ######Output
