@@ -12,7 +12,7 @@ Sys.setenv(VROOM_CONNECTION_SIZE = as.character(10 * 1024 * 1024)) #For any larg
 
 tar_option_set(packages = c("dplyr", "tidyr", "tibble", "readr", "data.table", "bit64", 
                             "foreign", "quarto", "rlang", "purrr", "rcompanion", "knitr", "gtsummary", "labelled",
-                            "kableExtra", "gt", "cli", "quarto", "sandwich", "lmerTest"))
+                            "kableExtra", "gt", "cli", "quarto", "sandwich", "lmerTest", "ggplot2"))
 
 tar_source("/media/Analyses/MESA-MIND-Longitudinal-Proteomics-cSVD/R")
 
@@ -124,7 +124,7 @@ list(
                                 "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
-  tar_target(WMH_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(WMH_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                         protein_mapping = Protein_mapping_file,
                                                         traits_db = traits_db, 
                                                         outcome = "wmh",
@@ -132,7 +132,7 @@ list(
                                                         factor_covariates = wmh_factor_covs,
                                                         chosen_exam = 6)),
   
-  tar_target(WMH_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(WMH_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                         protein_mapping = Protein_mapping_file,
                                                         traits_db = traits_db, 
                                                         outcome = "wmh",
@@ -147,7 +147,7 @@ list(
                                 "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
-  tar_target(EPVS_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(EPVS_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                         protein_mapping = Protein_mapping_file,
                                                         traits_db = traits_db, 
                                                         outcome = "epvs",
@@ -155,7 +155,7 @@ list(
                                                         factor_covariates = epvs_factor_covs,
                                                         chosen_exam = 6)),
   
-  tar_target(EPVS_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(EPVS_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                         protein_mapping = Protein_mapping_file,
                                                         traits_db = traits_db, 
                                                         outcome = "epvs",
@@ -172,7 +172,7 @@ list(
                                  "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
-  tar_target(FA_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(FA_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                          protein_mapping = Protein_mapping_file,
                                                          traits_db = traits_db, 
                                                          outcome = "fa",
@@ -180,7 +180,7 @@ list(
                                                          factor_covariates = fa_factor_covs,
                                                          chosen_exam = 6)),
   
-  tar_target(FA_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(FA_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                          protein_mapping = Protein_mapping_file,
                                                          traits_db = traits_db, 
                                                          outcome = "fa",
@@ -196,7 +196,7 @@ list(
                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
-  tar_target(MB_E6_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(MB_E6_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                        protein_mapping = Protein_mapping_file,
                                                        traits_db = traits_db, 
                                                        outcome = "mb_present",
@@ -204,7 +204,7 @@ list(
                                                        factor_covariates = mb_factor_covs,
                                                        chosen_exam = 6)),
   
-  tar_target(MB_E1_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long, 
+  tar_target(MB_E1_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                        protein_mapping = Protein_mapping_file,
                                                        traits_db = traits_db, 
                                                        outcome = "mb_present",

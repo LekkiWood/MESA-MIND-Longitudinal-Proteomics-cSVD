@@ -1,3 +1,6 @@
+#Proteins_long = tar_read(Proteins_long)
+#QC_fil = tar_read(Protein_mapping_file)
+
 final_proteins_function <- function(Proteins_long, QC_file){
   
   Included_proteins <- QC_file |>
