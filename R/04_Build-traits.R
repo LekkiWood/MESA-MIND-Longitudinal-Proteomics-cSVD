@@ -146,10 +146,11 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                               race1c=="2: CHINESE-AMERICAN" ~ 2,
                               race1c=="3: black, AFRICAN-AMERICAN" ~ 3,
                               race1c=="4: HISPANIC" ~ 4,
-                              TRUE ~ NA_real_)
+                              TRUE ~ NA_real_),
+      BL_age = age1c
     ) |>
     dplyr::left_join(bridge, dplyr::join_by(idno)) |>
-    dplyr::select(idno, sidno, edu, gender, race)
+    dplyr::select(idno, sidno, edu, gender, race, BL_age)
   
   E6_always <- foreign::read.dta(path_E6_covs) |>
     dplyr::mutate(site = dplyr::case_when(site6c=="WFU" ~ 0,
@@ -193,14 +194,15 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                   smoking = dplyr::case_when(cig1c=="0: NEVER" ~ 1,
                                              cig1c=="1: FORMER" ~ 2,
                                              cig1c=="2: CURRENT" ~ 3,
-                                             TRUE ~ NA_real_) 
+                                             TRUE ~ NA_real_),
+                  time = 0,
                   )|>
-    dplyr::select(idno, age, BMI, diabetes, egfr, smoking) |>
+    dplyr::select(idno, age, BMI, diabetes, egfr, smoking, time) |>
     dplyr::left_join(E1_always, dplyr::join_by(idno)) |>
     dplyr::left_join(E6_always, dplyr::join_by(idno, sidno)) |>
     dplyr::left_join(Traits, dplyr::join_by(idno, sidno)) |>
     dplyr::mutate(Exam = 1) |>
-    dplyr::select(idno, sidno, Exam, age, gender, site, edu, race, BMI, 
+    dplyr::select(idno, sidno, Exam, time, BL_age, age, gender, site, edu, race, BMI, 
                   smoking, ldl, sbp, diabetes, htnmeds, AFprevalent, MIprevalent, CHFprevalent, 
                   E4, egfr, icv, fa, wmh, epvs, mb_present) 
   
@@ -221,14 +223,15 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                   smoking = dplyr::case_when(cig5c=="Never" ~ 1,
                                              cig5c=="Former" ~ 2,
                                              cig5c=="Current" ~ 3,
-                                             TRUE ~ NA_real_) 
+                                             TRUE ~ NA_real_),
+                  time = e15dyc
     )|>
-    dplyr::select(idno, age, BMI, diabetes, egfr, smoking) |>
+    dplyr::select(idno, age, BMI, diabetes, egfr, smoking, time) |>
     dplyr::left_join(E1_always, dplyr::join_by(idno)) |>
     dplyr::left_join(E6_always, dplyr::join_by(idno, sidno)) |>
     dplyr::left_join(Traits, dplyr::join_by(idno, sidno)) |>
     dplyr::mutate(Exam = 5) |>
-    dplyr::select(idno, sidno, Exam, age, gender, site, edu, race, BMI, 
+    dplyr::select(idno, sidno, Exam, time, BL_age, age, gender, site, edu, race, BMI, 
                   smoking, ldl, sbp, diabetes, htnmeds, AFprevalent, MIprevalent, CHFprevalent, 
                   E4, egfr, icv, fa, wmh, epvs, mb_present) 
   
@@ -248,29 +251,37 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                   smoking = dplyr::case_when(cig6c=="NEVER" ~ 1,
                                              cig6c=="FORMER" ~ 2,
                                              cig6c=="CURRENT" ~ 3,
-                                             TRUE ~ NA_real_) 
+                                             TRUE ~ NA_real_),
+                  time = e16dyc
     )|>
-    dplyr::select(idno, age, BMI, diabetes, egfr, smoking) |>
+    dplyr::select(idno, age, BMI, diabetes, egfr, smoking, time) |>
     dplyr::left_join(E1_always, dplyr::join_by(idno)) |>
     dplyr::left_join(E6_always, dplyr::join_by(idno, sidno)) |>
     dplyr::left_join(Traits, dplyr::join_by(idno, sidno)) |>
     dplyr::mutate(Exam = 6) |>
-    dplyr::select(idno, sidno, Exam, age, gender, site, edu, race, BMI, 
+    dplyr::select(idno, sidno, Exam, time, BL_age, age, gender, site, edu, race, BMI, 
                   smoking, ldl, sbp, diabetes, htnmeds, AFprevalent, MIprevalent, CHFprevalent, 
                   E4, egfr, icv, fa, wmh, epvs, mb_present) 
   
   #----------------------N with MIND, protein and covs -----------------------------------
   
+  missing_cov_info <- dplyr::bind_rows(E1_traits, E5_traits, E6_traits) |>
+    dplyr::filter(idno %in% protein_and_MIND_ids$idno) 
+  
   full_db <- dplyr::bind_rows(E1_traits, E5_traits, E6_traits) |>
-    dplyr::filter(idno %in% Traits$idno) |>
-    dplyr::filter(!is.na(age) & !is.na(gender) & !is.na(site) & !is.na(edu) & !is.na(race) & !is.na(BMI) & !is.na(smoking) & 
-                    !is.na(ldl) & !is.na(sbp) & !is.na(diabetes) & !is.na(htnmeds) & !is.na(AFprevalent) & !is.na(MIprevalent) & 
-                    !is.na(CHFprevalent) & !is.na(E4) & !is.na(egfr) & !is.na(icv))
+    dplyr::filter(idno %in% protein_and_MIND_ids$idno)
   
   
+  #|>
+  #dplyr::filter(!is.na(age) & !is.na(time) & !is.na(gender) & !is.na(site) & !is.na(edu) & !is.na(race) & !is.na(BMI) & !is.na(smoking) & 
+  #!is.na(ldl) & !is.na(sbp) & !is.na(diabetes) & !is.na(htnmeds) & !is.na(AFprevalent) & !is.na(MIprevalent) & 
+  #!is.na(CHFprevalent) & !is.na(E4) & !is.na(egfr) & !is.na(icv))
   
-  protein_and_MIND_and_cov_ids <- full_db |>
-    dplyr::select(idno, sidno, Exam)
+
+  
+  
+  # protein_and_MIND_and_cov_ids <- full_db |>
+  # dplyr::select(idno, sidno, Exam)
   
   #------------------------------------------------------------#
   #---------------Info for README -----------------------------#
@@ -296,9 +307,10 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
     
     QC_info_out = QC_info,
     Traits_table = full_db,
+    missing_cov_info= missing_cov_info,
     mind_ids = mind_ids,
-    protein_and_MIND_ids = protein_and_MIND_ids,
-    protein_and_MIND_and_cov_ids = protein_and_MIND_and_cov_ids
+    protein_and_MIND_ids = protein_and_MIND_ids #,
+    #protein_and_MIND_and_cov_ids = protein_and_MIND_and_cov_ids
     )
   
   

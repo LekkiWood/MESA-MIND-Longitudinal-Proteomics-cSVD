@@ -41,7 +41,7 @@ cross_sectional_PWAS_function <- function(cleaned_proteins, protein_mapping,
     )
     
     fml <- stats::as.formula(
-      paste0("scale(", outcome, ") ~ ", paste(rhs_terms, collapse = " + "))
+      paste0("scale(", "rcompanion::blom (", outcome, ")) ~ ", paste(rhs_terms, collapse = " + "))
     )
     
     fit <- stats::lm(fml, data = dat)
