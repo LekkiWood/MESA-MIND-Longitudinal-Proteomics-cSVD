@@ -4,8 +4,12 @@ author: "LekkiWood (LekkiWood@Gmail.com)"
 date: today
 format:
   pdf:
+    pdf-engine: lualatex
     includes:
       in_header: 'gt_packages.sty'
+    header-includes:
+      - \usepackage{pdflscape}
+      - \setkeys{Gin}{width=\linewidth,height=0.9\textheight,keepaspectratio}
     toc: true
     toc-depth: 3
 crossref:
@@ -65,11 +69,78 @@ if (!requireNamespace("naniar", quietly = TRUE)) {
 
 # Important Notes - read me first
 
+```{r}
+
+#| label: read-in-traits-for-sparse-analysis
+
+Traits_db <- targets::tar_read(traits_db)
+
+```
+
+## Version control
+
 -   Always check that you have the most recent version of this document, which - unless I am sending you unfinalized work - is available [here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/MESA-MIND-Longitudinal-Proteomics-cSVD.pdf).
 
     -   An easy check for version control is to make sure this date: `r Sys.Date()`. is the same as on the GitHub file [here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/MESA-MIND-Longitudinal-Proteomics-cSVD.pdf).
 
 -   The code for this is analysis available in the same repository ([targets master file here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/blob/main/_targets.R) and [individual functions here](https://github.com/LekkiWood/MESA-MIND-Longitudinal-Proteomics-cSVD/tree/main/R))
+
+## Regarding the use of site & race/ethnicity
+
+-   Some MESA field centers did not collect data on individuals from select race / ethnicity groups (see: @tbl-race-by-site). Therefore, only race/ethnicity was included in analyses, with the exception of sample descriptives.
+
+```{r}
+#| label: tbl-race-by-site
+#| tbl-cap: Field Center by Race / Ethnicity Frequencies 
+
+bold_labels <- c("Race or ethnicity")
+
+table1 <- Traits_db |> 
+  dplyr::mutate(
+        race_desc = factor(race,
+                       levels = c("1", "2", "3", "4"),
+                       labels = c("Non-Hispanic White", "Chinese American", "Black/African-American", "Hispanic")),
+        site_desc = factor(site,
+                       levels = c("0", "1", "2", "3", "4", "5"),
+                       labels = c("Wake Forest", "Columbia","Johns Hopkins", "Minnesota", "Northwestern", "UCLA"))
+      ) |>
+gtsummary::tbl_summary(
+    include = c(race_desc),
+    by = site_desc,
+    statistic = list(
+      gtsummary::all_continuous() ~ "{mean} ({sd})",
+      gtsummary::all_categorical() ~ "{n} / {N} ({p}%)"
+    ),# split table by group
+    missing = "no", # don't list missing data separately
+    digits = gtsummary::all_continuous() ~ 2, 
+   ##add in labels
+     label = list(race_desc = "Race or ethnicity"),
+   type = list(race_desc ~ "categorical") 
+) |>
+  gtsummary::modify_spanning_header(
+    gtsummary::all_stat_cols() ~ "Field Center"
+  ) |>
+  gtsummary::as_gt() |>
+  gt::tab_options(page.orientation = "landscape") |>
+  gt::tab_style(
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_body(
+      columns = "label",
+      rows = label %in% bold_labels
+    )
+    ) |>
+# Bold *any* spanning headers (includes your "Exam" spanner)
+  gt::tab_style(
+    style = gt::cell_text(weight = "bold"),
+    locations = gt::cells_column_spanners()
+  ) 
+
+table1
+
+rm(bold_labels)
+rm(table1)
+
+```
 
 # Summary
 
@@ -145,8 +216,6 @@ knitr::kable(finalclean_N_by_exam, format="latex") #print(knitr::kable(finalclea
 
 Traits_QC_info <- targets::tar_read(traits_QC_info)
 
-Traits_db <- targets::tar_read(traits_db)
-
 missing_cov_info <- targets::tar_read(missing_cov_info)
 ```
 
@@ -182,11 +251,7 @@ missing_cov_info <- targets::tar_read(missing_cov_info)
 
 -   Microbleeds were coded as 0/1, where 0= no microbleeds (value: 0) and 1 = presence of microbleeds (all non-zero values except missing). Then, those images with a low image quality (value = 4; N=`{r} length(Traits_db$qsm_swi_image_quality[Traits_db$qsm_swi_image_quality == 4 & !is.na(Traits_db$qsm_swi_image_quality)])` ) were recoded to missing.
 
-```{r}
-#| label: raw-MB-N-quality
-
-knitr::kable(table(Traits_db$mb_present), format="latex")
-```
+<!-- -->
 
 -   Perivascular spaces (variable: epvs_wholebrain_vol) were recoded to missing where the variable 'pvs_exclude' was coded as 1 (N=`{r} length(Traits_db[Traits_db$pvs_exclude ==1 & !is.na(Traits_db$pvs_exclude),]$pvs_exclude)`).
 
@@ -256,13 +321,13 @@ gt_table
 #| label: info-for-descrptives
 
 mind_ids <- targets::tar_read(mind_ids)
-protein_and_MIND_ids <- targets::tar_read(protein_and_MIND_ids)
+#protein_and_MIND_ids <- targets::tar_read(protein_and_MIND_ids)
 #protein_and_MIND_and_cov_ids <- targets::tar_read(protein_and_MIND_and_cov_ids)
 ```
 
 -   There were N=`{r} print(length(unique(mind_ids$idno)))` MESA participants with at least one MRI outcome after the exclusions above.
 
--   Of those with MRI data, N=`{r} print(length(unique(protein_and_MIND_ids$idno)))` participants had protein data, equating to N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(protein_and_MIND_ids[which(protein_and_MIND_ids$Exam==6),]$idno))` at exam 6
+-   Of those with MRI data, N=`{r} print(length(unique(Traits_db$idno)))` participants had protein data, equating to N=`{r} length(unique(Traits_db[which(Traits_db$Exam==1),]$idno))` at exam 1, N=`{r} length(unique(Traits_db[which(Traits_db$Exam==5),]$idno))` at exam 5, and N=`{r} length(unique(Traits_db[which(Traits_db$Exam==6),]$idno))` at exam 6
 
 -   Sample descriptives are available in @tbl-of-descriptives
 
@@ -280,7 +345,6 @@ bold_labels <- c(
   "White matter hyperintensities", "Enlarged perivascular spaces",
   "Presence of microbleeds?"
 )
-
 
 
 table1 <- Traits_db |> 
@@ -313,7 +377,7 @@ table1 <- Traits_db |>
                        levels = c("0", "1", "2"),
                        labels = c("No E4 isoform", "E4 isoform", "No ApoE data")),
         site_desc = factor(site,
-                       levels = c("1", "2", "3", "4", "5", "6"),
+                       levels = c("0", "1", "2", "3", "4", "5"),
                        labels = c("Wake Forest", "Columbia","Johns Hopkins", "Minnesota", "Northwestern", "UCLA")),
          AFprevalent_desc = factor(AFprevalent,
                        levels = c("0", "1"),
@@ -325,7 +389,7 @@ table1 <- Traits_db |>
                        levels = c("0", "1"),
                        labels = c("No", "Yes")),
         smoking_desc = factor(smoking,
-                       levels = c("0", "1", "2"),
+                       levels = c( "1", "2", "3"),
                        labels = c("Never", "Former", "Current"))
       ) |>
 gtsummary::tbl_summary(
@@ -403,6 +467,9 @@ gtsummary::tbl_summary(
 
 table1
 
+rm(bold_labels)
+rm(table1)
+
 ```
 :::
 
@@ -466,15 +533,15 @@ fa_factor_covs <- targets::tar_read(fa_factor_covs)
 
 ### WMH: Exam 6 proteins
 
--   The E6 proteins -\> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res$wmh_6_nobs, na.rm=TRUE))` participants.
+-   The E6 proteins -> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res$wmh_6_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(wmh_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with WMH at an FDR corrected P\<.05.
+-   A total of N=`{r} PWAS_res |> dplyr::filter(wmh_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with WMH at an FDR corrected P<.05.
 
 ### WMH: Exam 1 proteins
 
--   The E1 proteins -\> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res$wmh_1_nobs, na.rm=TRUE))` participants.
+-   The E1 proteins -> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res$wmh_1_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(wmh_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with WMH at an FDR corrected P\<.05 (see @tbl-wmh-E1-sig and @fig-wmh-E1)
+-   A total of N=`{r} PWAS_res |> dplyr::filter(wmh_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with WMH at an FDR corrected P<.05.
 
 ## Enlarged Perivascular Spaces (EPVS)
 
@@ -487,15 +554,15 @@ fa_factor_covs <- targets::tar_read(fa_factor_covs)
 
 ### EPVS: Exam 6 proteins
 
--   The E6 proteins -\> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res$epvs_6_nobs, na.rm=TRUE))` participants.
+-   The E6 proteins -> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res$epvs_6_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(epvs_6_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P\<.05
+-   A total of N=`{r} PWAS_res |> dplyr::filter(epvs_6_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P<.05
 
 ### EPVS: Exam 1 proteins
 
--   The E1 proteins -\> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res$epvs_1_nobs, na.rm=TRUE))` participants.
+-   The E1 proteins -> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res$epvs_1_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(epvs_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P\<.05
+-   A total of N=`{r} PWAS_res |> dplyr::filter(epvs_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P<.05
 
 ## Fractional Anisotropy (FA)
 
@@ -516,7 +583,7 @@ fa_factor_covs <- targets::tar_read(fa_factor_covs)
 
 -   The E1 proteins -\> E6 MRI for FA included data from N=`{r} print(max(PWAS_res$fa_1_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(fa_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with FA at an FDR corrected P\<.05.
+-   A total of N=`{r} PWAS_res |> dplyr::filter(fa_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with FA at an FDR corrected P\<.05 (see @tbl-fa-E1-sig and @fig-fa-E1).
 
 ## Microbleeds (MB)
 
@@ -528,75 +595,17 @@ fa_factor_covs <- targets::tar_read(fa_factor_covs)
 
 ### MB: Exam 6 proteins
 
--   The E6 proteins -\> E6 MRI for MB included data from N= `{r} print(max(PWAS_res$mb_present_6_nobs, na.rm=TRUE))` participants.
+-   The E6 proteins -> E6 MRI for MB included data from N= `{r} print(max(PWAS_res$mb_present_6_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(mb_present_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with MB at an FDR corrected P\<.05.
+-   A total of N=`{r} PWAS_res |> dplyr::filter(mb_present_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with MB at an FDR corrected P<.05.
 
 ### MB: Exam 1 proteins
 
--   The E1 proteins -\> E6 MRI for FA included data from N=`{r} print(max(PWAS_res$mb_present_1_nobs, na.rm=TRUE))` participants.
+-   The E1 proteins -> E6 MRI for FA included data from N=`{r} print(max(PWAS_res$mb_present_1_nobs, na.rm=TRUE))` participants.
 
--   A total of N=`{r} PWAS_res |> dplyr::filter(mb_present_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with MB at an FDR correct P\<.05.
+-   A total of N=`{r} PWAS_res |> dplyr::filter(mb_present_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with MB at an FDR correct P<.05.
 
 ::: landscape
-```{r}
-#| label: tbl-wmh-E1-sig
-#| tbl-cap: Associations Between Exam 1 Proteins and White Matter Hyperintensity Reaching an FDR-corrected P<.05 Equivalent
-
-gt_table <-  PWAS_res |> 
-  dplyr::filter(wmh_1_fdr < .05 )|>
-  dplyr::select(Assay, wmh_1_nobs, wmh_1_beta, wmh_1_se, wmh_1_pvalue, wmh_1_fdr, 
-                OlinkID, cv_percent, UniProt) |>
-  gt::gt() |>
-  gt::cols_label(Assay = "Protein", 
-                 wmh_1_nobs = "N", 
-                 wmh_1_beta = "Beta", 
-                 wmh_1_se = "SE", 
-                 wmh_1_pvalue = "P", 
-                 wmh_1_fdr = "P-FDR",
-                 OlinkID = "Olink ID", 
-                 cv_percent = "Protein CV", 
-                 UniProt = "UniProt ID") |>
-  gt::fmt_number(columns = c(wmh_1_beta, wmh_1_se, cv_percent),rows = tidyselect::everything(), decimals = 2) |>
-  gt::fmt_scientific(columns = c(wmh_1_pvalue, wmh_1_fdr), rows = tidyselect::everything(), decimals = 2) |>
-  gt::tab_options(page.orientation = "landscape") |>
-  gt::as_latex()
-
-gt_table
-
-
-```
-
-```{r}
-#| label: fig-wmh-E1
-#| fig-cap: Associations Between Exam 1 Proteins and White Matter Hyperintensity
-
-full_res <- PWAS_res |>
-  dplyr::mutate(diffexpressed = dplyr::case_when(wmh_1_beta > 0 & wmh_1_fdr < 0.05 ~ "SIG INCREASE",
-                                                 wmh_1_beta < 0 & wmh_1_fdr < 0.05 ~ "SIG DECREASE",
-                                                 TRUE ~ "NO SIG CHANGE"), 
-                colour = dplyr::case_when(wmh_1_beta > 0 & wmh_1_fdr < 0.05 ~ "purple", 
-                                          wmh_1_beta < 0 & wmh_1_fdr < 0.05 ~ "blue",
-                                          TRUE ~ "slategrey"),
-                label= dplyr::case_when(wmh_1_fdr < 0.05 ~ Assay,
-                                        TRUE ~ NA_character_))
-
-ggplot2::ggplot(data=full_res, ggplot2::aes(x=wmh_6_beta, y=-log10(wmh_1_fdr), color=diffexpressed, label=label)) + 
-  ggplot2::geom_point(size=1.5, color=full_res$colour) + 
-  ggplot2::theme_minimal() +
-  ggrepel::geom_label_repel(max.overlaps = 100, label.size=0.5, size=4.5,
-                   color = full_res$colour, min.segment.length=0) +
-  ggplot2::xlab("Standardized beta") +
-  ggplot2::ylab("log10(P-FDR)") + 
-  #ggplot2::labs(caption = paste("Models control for", paste(paste(wmh_numeric_covs, collapse=","), paste(wmh_factor_covs, collapse=",")), sep=" ")) +
-  ggplot2::labs(caption = paste("Models control for", paste(paste(paste(wmh_numeric_covs, collapse=","), "\n", sep=" "), paste(wmh_factor_covs, collapse=",")), sep=" ")) +
-  ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0))
-
-
-rm(full_res)
-
-```
-
 ```{r}
 #| label: tbl-fa-E6-sig
 #| tbl-cap: Associations Between Exam 6 Proteins and Fractional Anisotropy Reaching an FDR-corrected P<.05 Equivalent
@@ -625,6 +634,7 @@ gt_table
 #knitr::kable(table(gt_table), format="latex")
 
 ```
+::: 
 
 ```{r}
 #| label: fig-fa-E6
@@ -655,9 +665,224 @@ ggplot2::ggplot(data=full_res, ggplot2::aes(x=fa_6_beta, y=-log10(fa_6_fdr), col
 rm(full_res)
 
 ```
-:::
 
-\\newpage
+::: landscape
+
+```{r}
+#| label: tbl-fa-E1-sig
+#| tbl-cap: Associations Between Exam 1 Proteins and Fractional Anisotropy Reaching an FDR-corrected P<.05 Equivalent
+
+gt_table <- PWAS_res |>
+  dplyr::filter(fa_1_fdr < 0.05) |>
+  dplyr::select(
+    Assay, fa_1_nobs, fa_1_beta, fa_1_se, fa_1_pvalue, fa_1_fdr,
+    OlinkID, cv_percent, UniProt
+  ) |>
+  gt::gt() |>
+  gt::cols_label(
+    Assay = "Protein",
+    fa_1_nobs = "N",
+    fa_1_beta = "Beta",
+    fa_1_se = "SE",
+    fa_1_pvalue = "P",
+    fa_1_fdr = "P-FDR",
+    OlinkID = "Olink ID",
+    cv_percent = "Protein CV",
+    UniProt = "UniProt ID"
+  ) |>
+  gt::fmt_number(columns = c(fa_1_beta, fa_1_se, cv_percent), decimals = 2) |>
+  gt::fmt_scientific(columns = c(fa_1_pvalue, fa_1_fdr), decimals = 2) |>
+  gt::tab_options(latex.use_longtable = TRUE)
+
+gt_table
+
+#knitr::kable(table(gt_table), format="latex")
+
+```
+
+\newpage 
+
+```{r}
+#| label: fig-fa-E1
+#| fig-cap: Associations Between Exam 1 Proteins and Fractional Anisotropy
+#| fig-width: 13
+#| fig-height: 9
+
+full_res <- PWAS_res |>
+  dplyr::mutate(diffexpressed = dplyr::case_when(fa_1_beta > 0 & fa_1_fdr < 0.05 ~ "SIG INCREASE",
+                                                 fa_1_beta < 0 & fa_1_fdr < 0.05 ~ "SIG DECREASE",
+                                                 TRUE ~ "NO SIG CHANGE"), 
+                colour = dplyr::case_when(fa_1_beta > 0 & fa_1_fdr < 0.05 ~ "purple", 
+                                          fa_1_beta < 0 & fa_1_fdr < 0.05 ~ "blue",
+                                          TRUE ~ "slategrey"),
+                label= dplyr::case_when(fa_1_fdr < 0.05 ~ Assay,
+                                        TRUE ~ NA_character_))
+
+ggplot2::ggplot(data=full_res, ggplot2::aes(x=fa_1_beta, y=-log10(fa_1_fdr), color=diffexpressed, label=label)) + 
+  ggplot2::geom_point(size=1.5, color=full_res$colour) + 
+  ggplot2::theme_minimal() +
+  #ggrepel::geom_label_repel(max.overlaps = 500, label.size=0.3, size=2.5,
+                   #color = full_res$colour, min.segment.length=0) +
+ggrepel::geom_label_repel(
+  size = 1.6,                 # very small text
+  label.size = 0.15,          # very thin box outline
+  box.padding = 0.08,
+  point.padding = 0.05,
+  segment.size = 0.15,
+  min.segment.length = 0,
+  max.overlaps = Inf,
+  color = full_res$colour) +
+  ggplot2::xlab("Standardized beta") +
+  ggplot2::ylab("log10(P-FDR)") + 
+  #ggplot2::labs(caption = paste("Models control for", paste(paste(wmh_numeric_covs, collapse=","), paste(wmh_factor_covs, collapse=",")), sep=" ")) +
+  ggplot2::labs(caption = paste("Models control for", paste(paste(paste(fa_numeric_covs, collapse=","), "\n", sep=" "), paste(fa_factor_covs, collapse=",")), sep=" ")) +
+  ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0))
+
+
+rm(full_res)
+
+```
+
+::: 
+
+\newpage
+
+# Step 6: Cross sectional Protein-Wide Association Studies (PWAS) with a reduced number of covariates
+
+This section repeats the cross-sectional PWAS, nusing thr set of covariates recommended by Tim.
+
+```{r}
+#| label: cross-sectional PWAS data with reduced covariates
+
+#Load results
+
+WMH_E6_PWAS_reducedcov <- targets::tar_read(WMH_E6_PWAS_reducedcov)
+WMH_E1_PWAS_reducedcov  <- targets::tar_read(WMH_E1_PWAS_reducedcov) 
+EPVS_E6_PWAS_reducedcov  <- targets::tar_read(EPVS_E6_PWAS_reducedcov)
+EPVS_E1_PWAS_reducedcov  <- targets::tar_read(EPVS_E1_PWAS_reducedcov)
+
+MB_E6_PWAS_reducedcov  <- targets::tar_read(MB_E6_PWAS_reducedcov)
+MB_E1_PWAS_reducedcov  <- targets::tar_read(MB_E1_PWAS_reducedcov)
+
+FA_E6_PWAS_reducedcov  <- targets::tar_read(FA_E6_PWAS_reducedcov)
+FA_E1_PWAS_reducedcov  <- targets::tar_read(FA_E1_PWAS_reducedcov)
+
+PWAS_res_reducedcov  <- WMH_E6_PWAS_reducedcov  |>
+  dplyr::full_join(WMH_E1_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(EPVS_E1_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(EPVS_E6_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(MB_E1_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+    dplyr::full_join(MB_E6_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(FA_E1_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain)) |>
+  dplyr::full_join(FA_E6_PWAS_reducedcov , dplyr::join_by(OlinkID, cv_percent, UniProt, Assay, Panel, Retain))
+
+#Load covariates
+
+wmh_numeric_covs_reducedcov  <- targets::tar_read(wmh_numeric_covs_reducedcov )
+wmh_factor_covs_reducedcov  <- targets::tar_read(wmh_factor_covs_reducedcov )
+
+epvs_numeric_covs_reducedcov  <- targets::tar_read(epvs_numeric_covs_reducedcov )
+epvs_factor_covs_reducedcov  <- targets::tar_read(epvs_factor_covs_reducedcov )
+
+mb_numeric_covs_reducedcov  <- targets::tar_read(mb_numeric_covs_reducedcov )
+mb_factor_covs_reducedcov  <- targets::tar_read(mb_factor_covs_reducedcov )
+
+fa_numeric_covs_reducedcov  <- targets::tar_read(fa_numeric_covs_reducedcov )
+fa_factor_covs_reducedcov  <- targets::tar_read(fa_factor_covs_reducedcov )
+
+
+```
+
+-   This section includes PWAS where proteins were only used at one time point (exam 1 or exam 6), even if this was not the same time point as when the MRI data were used.
+
+-   All estimates are standardized.
+
+## White matter hyperintensity (WMH)
+
+### Model Specification
+
+-   The associations between WMH and proteins were analyzed via linear regression
+-   For WMH the numeric covariates included `{r} print(wmh_numeric_covs_reducedcov)`. ^2^
+-   For WMH the factor covariates included `{r} print(wmh_factor_covs_reducedcov)`. ^2^
+-   WMH was transformed using an inverse normal transformation (with blom constant).
+
+### WMH: Exam 6 proteins
+
+-   The E6 proteins -> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res_reducedcov$wmh_6_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov  |> dplyr::filter(wmh_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with WMH at an FDR corrected P<.05.
+
+### WMH: Exam 1 proteins
+
+-   The E1 proteins -> E6 MRI for WMH included data from N=`{r} print(max(PWAS_res_reducedcov$wmh_1_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(wmh_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with WMH at an FDR corrected P<.05.
+
+## Enlarged Perivascular Spaces (EPVS)
+
+### Model Specification
+
+-   The associations between EPVS and proteins were analyzed via linear regression
+-   For EPVS the numeric covariates included `{r} print(epvs_numeric_covs_reducedcov)`. ^2^
+-   For EPVS the factor covariates included `{r} print(epvs_factor_covs_reducedcov)`. ^2^
+-   EPVS was transformed using an inverse normal transformation (with blom constant).
+
+### EPVS: Exam 6 proteins
+
+-   The E6 proteins -> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res_reducedcov$epvs_6_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(epvs_6_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P<.05
+
+### EPVS: Exam 1 proteins
+
+-   The E1 proteins -> E6 MRI for EPVS included data from N=`{r} print(max(PWAS_res$epvs_1_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(epvs_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with EPVS at an FDR corrected P<.05
+
+## Fractional Anisotropy (FA)
+
+### Model Specification
+
+-   The associations between FA and proteins were analyzed via linear regression
+-   For FA the numeric covariates included `{r} print(fa_numeric_covs_reducedcov)`. ^2^
+-   For FA the factor covariates included `{r} print(fa_factor_covs_reducedcov)`. ^2^
+-   FA was transformed using an inverse normal transformation (with blom constant).
+
+### FA: Exam 6 proteins
+
+-   The E6 proteins -> E6 MRI for FA included data from N=`{r} print(max(PWAS_res_reducedcov$fa_6_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(fa_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with FA at an FDR corrected P<.05. 
+
+### FA: Exam 1 proteins
+
+-   The E1 proteins -> E6 MRI for FA included data from N=`{r} print(max(PWAS_res_reducedcov$fa_1_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(fa_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with FA at an FDR corrected P<.05.
+
+## Microbleeds (MB)
+
+### Model Specification
+
+-   The associations between MB and proteins were analyzed via logistic regression (MB coded as 'present' vs. 'absent' as above)
+-   For MB the numeric covariates included `{r} print(mb_numeric_covs_reducedcov)`. ^2^
+-   For MB the factor covariates included `{r} print(mb_factor_covs_reducedcov)`. ^2^
+
+### MB: Exam 6 proteins
+
+-   The E6 proteins -> E6 MRI for MB included data from N= `{r} print(max(PWAS_res_reducedcov$mb_present_6_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(mb_present_6_fdr < .05 )|> nrow()` exam 6 proteins were significantly associated with MB at an FDR corrected P<.05.
+
+### MB: Exam 1 proteins
+
+-   The E1 proteins -> E6 MRI for FA included data from N=`{r} print(max(PWAS_res_reducedcov$mb_present_1_nobs, na.rm=TRUE))` participants.
+
+-   A total of N=`{r} PWAS_res_reducedcov |> dplyr::filter(mb_present_1_fdr < .05 )|> nrow()` exam 1 proteins were significantly associated with MB at an FDR correct P<.05.
+
+
+
+
 
 # Notes
 

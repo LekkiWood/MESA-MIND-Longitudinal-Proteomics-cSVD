@@ -49,8 +49,8 @@ list(
   tar_target(Proteins_long, build_proteins_out$Formatted_proteins_out),
   #N in formatted file by exam
   tar_target(Proteins_long_N, build_proteins_out$N_by_exam),
-  
-  #--------------------------------1B. Mapping file
+ 
+   #--------------------------------1B. Mapping file
   
   #QC info
   tar_target(protein_info, QC_proteins_function(path_proteins = path_proteins,
@@ -58,7 +58,6 @@ list(
                                                 path_protein_keys = path_protein_keys,
                                                 Proteins_long = Proteins_long)),
   tar_target(Protein_mapping_file, protein_info$final_proteins_mapping),
-  
   
   #--------------------------------1C. Final clean protein table
   
@@ -72,6 +71,7 @@ list(
   tar_target(Proteins_long_clean, proteins_clean$Final_proteins),
   #N in cleaned & formatted file by exam
   tar_target(Proteins_clean_N, proteins_clean$N_by_exam),
+  
   
   #---------------------------------------------------------------------------------------#
   #--------------------------------2. Build traits table----------------------------------#
@@ -115,15 +115,13 @@ list(
   tar_target(missing_cov_info, build_traits$missing_cov_info),
   
   
-  
-  
   #--------------------------------------------------------------------------------------------------------#
   #--------------------------------2. Run Cross-sectional PWAS -------------------------------------------#
   #-------------------------------------------------------------------------------------------------------#
   
   ##-------------White matter hyperintensities-----------------#
   tar_target(wmh_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(wmh_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+  tar_target(wmh_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
                                 "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
@@ -146,7 +144,7 @@ list(
   
   ##-------------Perivascular spaces. ----------------#
   tar_target(epvs_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(epvs_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+  tar_target(epvs_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
                                  "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
@@ -171,7 +169,7 @@ list(
   
   ##-------------Fractional ansiotropy ----------------#
   tar_target(fa_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(fa_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+  tar_target(fa_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
@@ -191,11 +189,9 @@ list(
                                                        factor_covariates = fa_factor_covs,
                                                        chosen_exam = 1)),
   
-  
-  
   ##-------------Microbleeds ----------------#
   tar_target(mb_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(mb_factor_covs, c("gender", "race", "site", "edu", "htnmeds", "smoking", "E4",
+  tar_target(mb_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
   
   
@@ -211,8 +207,101 @@ list(
                                                                 protein_mapping = Protein_mapping_file,
                                                                 traits_db = traits_db, 
                                                                 outcome = "mb_present",
-                                                                numeric_covariates = mb_numeric_covs,
+                                                                numeric_covariates = mb_numeric_covs_reducedcov,
                                                                 factor_covariates = mb_factor_covs,
+                                                                chosen_exam = 1)),
+  
+  #--------------------------------------------------------------------------------------------------------#
+  #--------------------------------2B. Run Cross-sectional PWAS -------------------------------------------#
+  #--------------------------------with reduced covariates -------------------------------------------#
+  #-------------------------------------------------------------------------------------------------------#
+  
+  ##-------------White matter hyperintensities-----------------#
+  tar_target(wmh_numeric_covs_reducedcov, c("icv", "age", "egfr", "BMI")),
+  tar_target(wmh_factor_covs_reducedcov, c("gender", "race", "edu", "smoking", "E4")),
+  
+  
+  tar_target(WMH_E6_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "wmh",
+                                                        numeric_covariates = wmh_numeric_covs_reducedcov,
+                                                        factor_covariates = wmh_factor_covs_reducedcov,
+                                                        chosen_exam = 6)),
+  
+  
+  tar_target(WMH_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                        protein_mapping = Protein_mapping_file,
+                                                        traits_db = traits_db, 
+                                                        outcome = "wmh",
+                                                        numeric_covariates = wmh_numeric_covs_reducedcov,
+                                                        factor_covariates = wmh_factor_covs_reducedcov,
+                                                        chosen_exam = 1)),
+  
+  ##-------------Perivascular spaces. ----------------#
+  tar_target(epvs_numeric_covs_reducedcov, c("icv", "age", "egfr", "BMI")),
+  tar_target(epvs_factor_covs_reducedcov, c("gender", "race", "edu", "smoking", "E4")),
+  
+  
+  tar_target(EPVS_E6_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                         protein_mapping = Protein_mapping_file,
+                                                         traits_db = traits_db, 
+                                                         outcome = "epvs",
+                                                         numeric_covariates = epvs_numeric_covs_reducedcov,
+                                                         factor_covariates = epvs_factor_covs_reducedcov,
+                                                         chosen_exam = 6)),
+  
+  tar_target(EPVS_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                         protein_mapping = Protein_mapping_file,
+                                                         traits_db = traits_db, 
+                                                         outcome = "epvs",
+                                                         numeric_covariates = epvs_numeric_covs_reducedcov,
+                                                         factor_covariates = epvs_factor_covs_reducedcov,
+                                                         chosen_exam = 1)),
+  
+  
+  
+  
+  ##-------------Fractional ansiotropy ----------------#
+  tar_target(fa_numeric_covs_reducedcov, c("age", "egfr")),
+  tar_target(fa_factor_covs_reducedcov, c("gender", "race", "edu", "smoking", "E4")),
+  
+  
+  tar_target(FA_E6_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                       protein_mapping = Protein_mapping_file,
+                                                       traits_db = traits_db, 
+                                                       outcome = "fa",
+                                                       numeric_covariates = fa_numeric_covs_reducedcov,
+                                                       factor_covariates = fa_factor_covs_reducedcov,
+                                                       chosen_exam = 6)),
+  
+  tar_target(FA_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                       protein_mapping = Protein_mapping_file,
+                                                       traits_db = traits_db, 
+                                                       outcome = "fa",
+                                                       numeric_covariates = fa_numeric_covs_reducedcov,
+                                                       factor_covariates = fa_factor_covs_reducedcov,
+                                                       chosen_exam = 1)),
+  
+  ##-------------Microbleeds ----------------#
+  tar_target(mb_numeric_covs_reducedcov, c("age", "egfr", "BMI")),
+  tar_target(mb_factor_covs_reducedcov, c("gender", "race", "edu", "smoking", "E4")),
+  
+  
+  tar_target(MB_E6_PWAS_reducedcov, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                                protein_mapping = Protein_mapping_file,
+                                                                traits_db = traits_db, 
+                                                                outcome = "mb_present",
+                                                                numeric_covariates = mb_numeric_covs_reducedcov,
+                                                                factor_covariates = mb_factor_covs_reducedcov,
+                                                                chosen_exam = 6)),
+  
+  tar_target(MB_E1_PWAS_reducedcov, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                                protein_mapping = Protein_mapping_file,
+                                                                traits_db = traits_db, 
+                                                                outcome = "mb_present",
+                                                                numeric_covariates = mb_numeric_covs_reducedcov,
+                                                                factor_covariates = mb_factor_covs_reducedcov,
                                                                 chosen_exam = 1)),
   
   #---------------------------------------------------------------------------------------#
@@ -228,4 +317,7 @@ list(
   
   
 )
+  
 
+  
+ 

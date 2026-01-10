@@ -18,7 +18,9 @@ build_protein_table_function <- function(path_proteins, path_protein_info, path_
   #Bridging file
   bridge <- data.table::fread(path_bridge) |>
     dplyr::select(`SHARE ID Number`, `MESA Participant ID`) |>
-    dplyr::rename(sidno = `SHARE ID Number`, idno = `MESA Participant ID`)
+    dplyr::rename(sidno = `SHARE ID Number`, idno = `MESA Participant ID`) |>
+    dplyr::mutate(sidno = factor(sidno),
+                  idno = factor(idno))
   
   raw_protein_N_all <- length(unique(proteins_raw$OlinkID))
   
@@ -54,6 +56,9 @@ build_protein_table_function <- function(path_proteins, path_protein_info, path_
     #merge in exam and id info, using only info in mapping file (no protein assays)
     dplyr::left_join(dplyr::select(Non_bridging_samples, SampleID, sidno, Exam, Batch), 
                      dplyr::join_by(SampleID)) |>
+    dplyr::mutate(sidno = factor(sidno),
+                  Exam = factor(Exam),
+                  Batch = factor(Batch)) |>
     dplyr::left_join(bridge, dplyr::join_by(sidno))
   
   sidno_by_id <- as.data.frame(table(formatted_proteins$sidno, formatted_proteins$Exam)) |>

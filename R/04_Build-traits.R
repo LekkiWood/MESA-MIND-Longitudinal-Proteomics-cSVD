@@ -158,7 +158,7 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                                           site6c=="JHU" ~ 2,
                                           site6c=="UMN" ~ 3,
                                           site6c=="NWU" ~ 4,
-                                          site6c=="UCLA" ~ 6,
+                                          site6c=="UCLA" ~ 5,
                                           TRUE ~ NA_real_), 
                   ldl = ldl6,
                   sbp = sbp6c,
@@ -269,6 +269,23 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
     dplyr::filter(idno %in% protein_and_MIND_ids$idno) 
   
   full_db <- dplyr::bind_rows(E1_traits, E5_traits, E6_traits) |>
+    dplyr::mutate(idno = factor(idno),
+                  sidno = factor(sidno),
+                  Exam = factor(Exam), 
+                  gender = factor(gender), 
+                  site = factor(site), 
+                  edu = factor(edu), 
+                  race = factor(race), 
+                  smoking = factor(smoking), 
+                  diabetes = factor(diabetes), 
+                  htnmeds = factor(htnmeds), 
+                  AFprevalent = factor(AFprevalent), 
+                  MIprevalent = factor(MIprevalent), 
+                  CHFprevalent = factor(CHFprevalent), 
+                  E4 = factor(E4), 
+                  mb_present = factor(mb_present)
+      
+    ) |>
     dplyr::filter(idno %in% protein_and_MIND_ids$idno)
   
   
