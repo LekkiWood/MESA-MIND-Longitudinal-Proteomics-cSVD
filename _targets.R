@@ -116,7 +116,7 @@ list(
   
   
   #--------------------------------------------------------------------------------------------------------#
-  #--------------------------------2. Run Cross-sectional PWAS -------------------------------------------#
+  #--------------------------------3. Run Cross-sectional PWAS -------------------------------------------#
   #-------------------------------------------------------------------------------------------------------#
   
   ##-------------White matter hyperintensities-----------------#
@@ -212,7 +212,7 @@ list(
                                                                 chosen_exam = 1)),
   
   #--------------------------------------------------------------------------------------------------------#
-  #--------------------------------2B. Run Cross-sectional PWAS -------------------------------------------#
+  #--------------------------------3B. Run Cross-sectional PWAS -------------------------------------------#
   #--------------------------------with reduced covariates -------------------------------------------#
   #-------------------------------------------------------------------------------------------------------#
   
@@ -303,6 +303,46 @@ list(
                                                                 numeric_covariates = mb_numeric_covs_reducedcov,
                                                                 factor_covariates = mb_factor_covs_reducedcov,
                                                                 chosen_exam = 1)),
+  
+  #---------------------------------------------------------------------------------------#
+  #--------------------------------4. Longitudinal PWAS----------------------------------#
+  #---------------------------------------------------------------------------------------#
+  
+  ##-------------White matter hyperintensity ----------------# 
+  tar_target(wmhlong_numeric_covs, c("time", "BL_age", "egfr", "icv")),
+  tar_target(wmhlong_factor_covs, c("gender", "race", "edu", "smoking", "E4")),
+  
+  tar_target(WMH_LongPWAS, longitudinal_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                     protein_mapping = Protein_mapping_file,
+                                                     traits_db = traits_db, 
+                                                     predictor = "wmh",
+                                                     numeric_covariates = wmhlong_numeric_covs,
+                                                     factor_covariates = wmhlong_factor_covs)),
+  
+  
+  ##-------------Enlarged Perivascular Spaces ----------------# 
+  tar_target(epvslong_numeric_covs, c("time", "BL_age", "egfr", "icv")),
+  tar_target(epvslong_factor_covs, c("gender", "race", "edu", "smoking", "E4")),
+  
+  tar_target(EPVS_LongPWAS, longitudinal_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                      protein_mapping = Protein_mapping_file,
+                                                      traits_db = traits_db, 
+                                                      predictor = "epvs",
+                                                      numeric_covariates = epvslong_numeric_covs,
+                                                      factor_covariates = epvslong_factor_covs)),
+  
+  
+  ##-------------Fractional ansiotropy ----------------# 
+  tar_target(falong_numeric_covs, c("time", "BL_age", "egfr")),
+  tar_target(falong_factor_covs, c("gender", "race", "edu", "smoking", "E4")),
+  
+  tar_target(FA_LongPWAS, longitudinal_PWAS_function(cleaned_proteins = Proteins_long_clean, 
+                                                     protein_mapping = Protein_mapping_file,
+                                                     traits_db = traits_db, 
+                                                     predictor = "fa",
+                                                     numeric_covariates = falong_numeric_covs,
+                                                     factor_covariates = falong_factor_covs)),
+
   
   #---------------------------------------------------------------------------------------#
   #--------------------------------Quarto output------------------------------------------#

@@ -276,7 +276,6 @@ build_traits_function <- function(path_E1_covs, path_E5_covs, path_E6_covs, path
                   site = factor(site), 
                   edu = factor(edu), 
                   race = factor(race), 
-                  smoking = factor(smoking), 
                   diabetes = factor(diabetes), 
                   htnmeds = factor(htnmeds), 
                   AFprevalent = factor(AFprevalent), 
