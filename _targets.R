@@ -325,6 +325,19 @@ list(
                                                         factor_covariates = wmh_factor_covs_reducedcov,
                                                         chosen_exam = 6)),
   
+  #Save as csv file
+  tar_target(save_WMH_E6_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "WMH_E6_PWAS_reducedcov.csv")
+               readr::write_csv(WMH_E6_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
+  
   
   tar_target(WMH_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                         protein_mapping = Protein_mapping_file,
@@ -333,6 +346,19 @@ list(
                                                         numeric_covariates = wmh_numeric_covs_reducedcov,
                                                         factor_covariates = wmh_factor_covs_reducedcov,
                                                         chosen_exam = 1)),
+  
+  #Save as csv file
+  tar_target(save_WMH_E1_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "WMH_E1_PWAS_reducedcov.csv")
+               readr::write_csv(WMH_E1_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
   
   ##-------------Perivascular spaces. ----------------#
   tar_target(epvs_numeric_covs_reducedcov, c("icv", "age", "egfr", "BMI")),
@@ -347,6 +373,18 @@ list(
                                                          factor_covariates = epvs_factor_covs_reducedcov,
                                                          chosen_exam = 6)),
   
+  #Save as csv file
+  tar_target(save_EPVS_E6_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "EPVS_E6_PWAS_reducedcov.csv")
+               readr::write_csv(EPVS_E6_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
   tar_target(EPVS_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                          protein_mapping = Protein_mapping_file,
                                                          traits_db = traits_db, 
@@ -356,7 +394,17 @@ list(
                                                          chosen_exam = 1)),
   
   
-  
+  #Save as csv file
+  tar_target(save_EPVS_E1_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "EPVS_E1_PWAS_reducedcov.csv")
+               readr::write_csv(EPVS_E1_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
   
   ##-------------Fractional ansiotropy ----------------#
   tar_target(fa_numeric_covs_reducedcov, c("age", "egfr")),
@@ -371,6 +419,18 @@ list(
                                                        factor_covariates = fa_factor_covs_reducedcov,
                                                        chosen_exam = 6)),
   
+  #Save as csv file
+  tar_target(save_FA_E6_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "FA_E6_PWAS_reducedcov.csv")
+               readr::write_csv(FA_E6_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
   tar_target(FA_E1_PWAS_reducedcov, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                        protein_mapping = Protein_mapping_file,
                                                        traits_db = traits_db, 
@@ -378,6 +438,18 @@ list(
                                                        numeric_covariates = fa_numeric_covs_reducedcov,
                                                        factor_covariates = fa_factor_covs_reducedcov,
                                                        chosen_exam = 1)),
+  
+  #Save as csv file
+  tar_target(save_FA_E1_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "FA_E1_PWAS_reducedcov.csv")
+               readr::write_csv(FA_E1_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
   
   ##-------------Microbleeds ----------------#
   tar_target(mb_numeric_covs_reducedcov, c("age", "egfr", "BMI")),
@@ -392,6 +464,18 @@ list(
                                                                 factor_covariates = mb_factor_covs_reducedcov,
                                                                 chosen_exam = 6)),
   
+  #Save as csv file
+  tar_target(save_MB_E6_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "MB_E6_PWAS_reducedcov.csv")
+               readr::write_csv(MB_E6_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
   tar_target(MB_E1_PWAS_reducedcov, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
                                                                 protein_mapping = Protein_mapping_file,
                                                                 traits_db = traits_db, 
@@ -399,6 +483,18 @@ list(
                                                                 numeric_covariates = mb_numeric_covs_reducedcov,
                                                                 factor_covariates = mb_factor_covs_reducedcov,
                                                                 chosen_exam = 1)),
+  
+  #Save as csv file
+  tar_target(save_MB_E1_PWAS_reducedcov,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "MB_E1_PWAS_reducedcov.csv")
+               readr::write_csv(MB_E1_PWAS_reducedcov, out_path)
+               out_path
+             },
+             format = "file"
+  ),
   
   #---------------------------------------------------------------------------------------#
   #--------------------------------4. Longitudinal PWAS----------------------------------#
