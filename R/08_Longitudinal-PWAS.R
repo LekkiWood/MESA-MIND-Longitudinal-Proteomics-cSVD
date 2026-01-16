@@ -54,9 +54,9 @@ longitudinal_PWAS_function <- function(cleaned_proteins, protein_mapping,
       paste0("scale(", prot, ") ~ ", rhs_fixed)
     )
     
-    fml_mixed <- as.formula(
-      paste0("scale(", prot, ") ~ ", rhs_fixed, " + (1 | idno)")
-    )
+    #fml_mixed <- as.formula(paste0("scale(", prot, ") ~ ", rhs_fixed, " + (1 | idno)"))
+    
+    fml_mixed <- as.formula(paste0("scale(", prot, ") ~ ", rhs_fixed, " + (1 | sidno)"))
     
     res <- fit_mixed_or_fixed(fml_mixed, fml_fixed, dat)
     fit <- res$fit

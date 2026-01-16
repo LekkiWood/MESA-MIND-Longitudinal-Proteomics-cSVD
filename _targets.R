@@ -118,227 +118,7 @@ list(
   #--------------------------------------------------------------------------------------------------------#
   #--------------------------------3. Run Cross-sectional PWAS -------------------------------------------#
   #-------------------------------------------------------------------------------------------------------#
-  
-  ##-------------White matter hyperintensities-----------------#
-  tar_target(wmh_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(wmh_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
-                                "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
-  
-  
-  tar_target(WMH_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                        protein_mapping = Protein_mapping_file,
-                                                        traits_db = traits_db, 
-                                                        outcome = "wmh",
-                                                        numeric_covariates = wmh_numeric_covs,
-                                                        factor_covariates = wmh_factor_covs,
-                                                        chosen_exam = 6)),
-  
-  #Save as csv file
-  tar_target(save_WMH_E6_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "WMH_E6_PWAS.csv")
-               readr::write_csv(WMH_E6_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  
-  
-  tar_target(WMH_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                        protein_mapping = Protein_mapping_file,
-                                                        traits_db = traits_db, 
-                                                        outcome = "wmh",
-                                                        numeric_covariates = wmh_numeric_covs,
-                                                        factor_covariates = wmh_factor_covs,
-                                                        chosen_exam = 1)),
-  
-  #Save as csv file
-  tar_target(save_WMH_E1_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "WMH_E1_PWAS.csv")
-               readr::write_csv(WMH_E1_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  ##-------------Perivascular spaces. ----------------#
-  tar_target(epvs_numeric_covs, c("icv", "age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(epvs_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
-                                 "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
-  
-  
-  tar_target(EPVS_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                         protein_mapping = Protein_mapping_file,
-                                                         traits_db = traits_db, 
-                                                         outcome = "epvs",
-                                                         numeric_covariates = epvs_numeric_covs,
-                                                         factor_covariates = epvs_factor_covs,
-                                                         chosen_exam = 6)),
-  
-  #Save as csv file
-  tar_target(save_EPVS_E6_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "EPVS_E6_PWAS.csv")
-               readr::write_csv(EPVS_E6_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  tar_target(EPVS_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                         protein_mapping = Protein_mapping_file,
-                                                         traits_db = traits_db, 
-                                                         outcome = "epvs",
-                                                         numeric_covariates = epvs_numeric_covs,
-                                                         factor_covariates = epvs_factor_covs,
-                                                         chosen_exam = 1)),
-  
-  
-  #Save as csv file
-  tar_target(save_EPVS_E1_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "EPVS_E1_PWAS.csv")
-               readr::write_csv(EPVS_E1_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  ##-------------Fractional ansiotropy ----------------#
-  tar_target(fa_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(fa_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
-                               "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
-  
-  
-  tar_target(FA_E6_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                       protein_mapping = Protein_mapping_file,
-                                                       traits_db = traits_db, 
-                                                       outcome = "fa",
-                                                       numeric_covariates = fa_numeric_covs,
-                                                       factor_covariates = fa_factor_covs,
-                                                       chosen_exam = 6)),
-  
-  #Save as csv file
-  tar_target(save_FA_E6_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "FA_E6_PWAS.csv")
-               readr::write_csv(FA_E6_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  tar_target(FA_E1_PWAS, cross_sectional_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                       protein_mapping = Protein_mapping_file,
-                                                       traits_db = traits_db, 
-                                                       outcome = "fa",
-                                                       numeric_covariates = fa_numeric_covs,
-                                                       factor_covariates = fa_factor_covs,
-                                                       chosen_exam = 1)),
-  
-  #Save as csv file
-  tar_target(save_FA_E1_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "FA_E1_PWAS.csv")
-               readr::write_csv(FA_E1_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  ##-------------LASSO ----------------#
-  
-  tar_target(FA_E1_LASSO, cross_sectional_LASSO_function(cleaned_proteins  = Proteins_long_clean,
-                                                         traits_db = traits_db,
-                                                         numeric_covariates = fa_numeric_covs, 
-                                                         factor_covariates = fa_factor_covs, 
-                                                         outcome = "fa", 
-                                                         chosen_exam = 1, 
-                                                         MWASres = FA_E1_PWAS, 
-                                                         threshold = 0.05)),
-  
-  tar_target(FA_E1_LASSO_res, FA_E1_LASSO$LASSO_output), #LASSO for Quarto
-  tar_target(FA_E1_LASSO_forcsv, FA_E1_LASSO$LASSO_output_all_vars), #Full LASSO for csv 
-  
-  #Save full LASSO as csv file
-  tar_target(save_FA_E1_LASSO_forcsv,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "FA_E1_PWAS_fullLASSO.csv")
-               readr::write_csv(FA_E1_LASSO_forcsv, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-    
-    
-  
-  ##-------------Microbleeds ----------------#
-  tar_target(mb_numeric_covs, c("age", "egfr", "BMI", "sbp", "ldl")),
-  tar_target(mb_factor_covs, c("gender", "race", "edu", "htnmeds", "smoking", "E4",
-                               "AFprevalent", "diabetes", "MIprevalent", "CHFprevalent")),
-  
-  
-  tar_target(MB_E6_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                                protein_mapping = Protein_mapping_file,
-                                                                traits_db = traits_db, 
-                                                                outcome = "mb_present",
-                                                                numeric_covariates = mb_numeric_covs,
-                                                                factor_covariates = mb_factor_covs,
-                                                                chosen_exam = 6)),
-  
-  #Save as csv file
-  tar_target(save_MB_E6_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "MB_E6_PWAS.csv")
-               readr::write_csv(MB_E6_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  tar_target(MB_E1_PWAS, cross_sectional_logistic_PWAS_function(cleaned_proteins = Proteins_long_clean, 
-                                                                protein_mapping = Protein_mapping_file,
-                                                                traits_db = traits_db, 
-                                                                outcome = "mb_present",
-                                                                numeric_covariates = mb_numeric_covs_reducedcov,
-                                                                factor_covariates = mb_factor_covs,
-                                                                chosen_exam = 1)),
-  
-  #Save as csv file
-  tar_target(save_MB_E1_PWAS,
-             {
-               out_dir  <- "outputs"
-               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "MB_E1_PWAS.csv")
-               readr::write_csv(MB_E1_PWAS, out_path)
-               out_path
-             },
-             format = "file"
-  ),
-  
-  #--------------------------------------------------------------------------------------------------------#
-  #--------------------------------3B. Run Cross-sectional PWAS -------------------------------------------#
-  #--------------------------------with reduced covariates -------------------------------------------#
-  #-------------------------------------------------------------------------------------------------------#
+
   
   ##-------------White matter hyperintensities-----------------#
   tar_target(wmh_numeric_covs_reducedcov, c("icv", "age", "egfr", "BMI")),
@@ -481,25 +261,25 @@ list(
   
   ##-------------LASSO ----------------#
   
-  tar_target(FA_E1_LASSO_reducedcov, cross_sectional_LASSO_function(cleaned_proteins = Proteins_long_clean,
-                                                                    traits_db = traits_db,
-                                                                    numeric_covariates = fa_numeric_covs_reducedcov, 
-                                                                    factor_covariates = fa_factor_covs_reducedcov, 
-                                                                    outcome = "fa", 
-                                                                    chosen_exam = 1, 
-                                                                    MWASres = FA_E1_PWAS_reducedcov, 
-                                                                    threshold = 0.05)),
+  tar_target(FA_E1_LASSO_reducedcov, cross_sectional_LASSO_function(cleaned_proteins  = Proteins_long_clean,
+                                                         traits_db = traits_db,
+                                                         numeric_covariates = fa_numeric_covs_reducedcov, 
+                                                         factor_covariates = fa_factor_covs_reducedcov, 
+                                                         outcome = "fa", 
+                                                         chosen_exam = 1, 
+                                                         MWASres = FA_E1_PWAS_reducedcov, 
+                                                         threshold = 0.05)),
   
-  tar_target(FA_E1_LASSO_reducedcov_res, FA_E1_LASSO_reducedcov$LASSO_output$LASSO_output_important_vars), #For Quarto
-  tar_target(FA_E1_LASSO_reducedcov_forcsv, FA_E1_LASSO_reducedcov$LASSO_output_all_vars), #Full LASSO for csv 
+  tar_target(FA_E1_LASSO_res_reducedcov, FA_E1_LASSO_reducedcov$LASSO_output), #LASSO for Quarto
+  tar_target(FA_E1_LASSO_forcsv_reducedcov, FA_E1_LASSO_reducedcov$LASSO_output_all_vars), #Full LASSO for csv 
   
   #Save full LASSO as csv file
-  tar_target(save_FA_E1_LASSO_reducedcov_forcsv,
+  tar_target(save_FA_E1_LASSO_forcsv_reducedcov,
              {
                out_dir  <- "outputs"
                dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-               out_path <- file.path(out_dir, "FA_E1_PWAS_reducedcov_fullLASSO.csv")
-               readr::write_csv(FA_E1_LASSO_reducedcov_forcsv, out_path)
+               out_path <- file.path(out_dir, "FA_E1_PWAS_fullLASSO_reducedcov.csv")
+               readr::write_csv(FA_E1_LASSO_forcsv_reducedcov, out_path)
                out_path
              },
              format = "file"
@@ -577,6 +357,7 @@ list(
              format = "file"
   ),
   
+
   ##-------------Enlarged Perivascular Spaces ----------------# 
   tar_target(epvslong_numeric_covs, c("time", "BL_age", "egfr", "icv")),
   tar_target(epvslong_factor_covs, c("gender", "race", "edu", "smoking", "E4")),
@@ -646,6 +427,44 @@ list(
              format = "file"
   ),
 
+
+  #---------------------------------------------------------------------------------------#
+  ##---------------------Elastic net - tighter slopes  -----------------------------------#
+  #---------------------------------------------------------------------------------------#
+  
+  ##-------------White matter hyperintensity ----------------# 
+  
+  tar_target(WMH_Long_LASSO_BLUP, longitudinal_LASSO_function_BLUP(cleaned_proteins  = Proteins_long_clean,
+                                                                   traits_db = traits_db,
+                                                                   numeric_covariates = wmhlong_numeric_covs, 
+                                                                   factor_covariates = wmhlong_factor_covs, 
+                                                                   outcome = "wmh", 
+                                                                   MWASres = WMH_LongPWAS, 
+                                                                   threshold = 0.05,
+                                                                   exam_mri = 6,
+                                                                   min_exams_per_subject = 3,
+                                                                   nfolds = 10,
+                                                                   alpha_grid = seq(0.1, 0.9, 0.05),
+                                                                   cores = 4)),
+  
+  
+  
+  
+  tar_target(WMH_Long_LASSO_BLUP_diagnostics, WMH_Long_LASSO_BLUP$diagnostics), 
+  tar_target(WMH_Long_LASSO_BLUP_res_min, WMH_Long_LASSO_BLUP$data$LASSO_output_all_vars_coef_min), #LASSO for Quarto
+  
+  #Save full LASSO as csv file
+  tar_target(save_WMH_Long_LASSO_BLUP_res_min,
+             {
+               out_dir  <- "outputs"
+               dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+               out_path <- file.path(out_dir, "WMH_Long_fullLASSO.csv")
+               readr::write_csv(WMH_Long_LASSO_BLUP_res_min, out_path)
+               out_path
+             },
+             format = "file"
+  ),
+  
   
   #---------------------------------------------------------------------------------------#
   #--------------------------------Quarto output------------------------------------------#
